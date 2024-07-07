@@ -1,0 +1,53 @@
+/*
+Copyright (C) 2024 chris
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+*/
+/* 
+    Created on : 25 Jun 2024, 07:42:19
+    Author     : chris
+*/
+
+table.paginatedTable{
+    border:2px solid;
+    border-color: #b0b0b0;
+    border-radius: 5px;
+}
+table.paginatedTable tr th{
+    background-color: #b0b0b0;
+}
+table.paginatedTable tr th,
+table.paginatedTable tr td{
+    padding:3px 6px 3px 6px;
+}
+table.paginatedTable tr{
+    background-color: #EEEEEE;
+}
+table.paginatedTable tr.odd{
+    background-color: #FFFFFF;
+}
+
+table.paginatedTable tr th.right,
+table.paginatedTable tr td.right{
+    text-align:right;
+}
+table.paginatedTable tr th.left,
+table.paginatedTable tr td.left{
+    text-align:left;
+}
+table.paginatedTable tr th.center,
+table.paginatedTable tr td.center{
+    text-align:center;
+}

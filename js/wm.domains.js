@@ -87,6 +87,40 @@ wm.domains = function () {
         }
 
     };
+
+    this.displayDetails = function (event, domainName) {
+        var domain = this._domains[domainName];
+        domain.displayInModal(event);
+    };
+    this.displayControlFile = function (event, domain, controlFile) {
+        var domain = this._domains[domain];
+        domain.displayControlFile(controlFile);
+    };
+
+};
+wm.domain = function (item) {
+    this._domain = item.domain;
+    this._path = item.path;
+    this._webMonitorVersion = item.webMonitorVersion;
+    this._reportVersion = item.reportVersion;
+    this._noFilesScanned = item.noFilesScanned;
+    this._totalSizeScanned = item.totalSizeScanned;
+    this._topLevelDirectories = item.topLevelDirectories;
+    this._controlFiles = item.controlFiles;
+    this._wordPressVersions = item.wordPressVersions;
+    this._joomlaVersions = item.joomlaVersions;
+    this._joomlaBackups = item.joomlaBackups;
+    this._config = item.config;
+    this._creationDate = item.creationDate;
+    this._latestFiles = item.latestFiles;
+    this._largestFiles = item.largestFiles;
+    this._status = "Unknown";
+
+    for (const i in this._largestFiles) {
+        var item = this._largestFiles[i];
+        item.size = Number(item.size);
+    }
+
     this.getValues = function (items, link = true) {
         var out, lastItem, thisItem;
         var options;
@@ -94,7 +128,7 @@ wm.domains = function () {
         lastItem = '';
         items.forEach(item => {
             options = this.getPrefix(item);
-            thisItem = this.getEventValue(options.walkValue);
+            thisItem = this.getValue(options.walkValue);
             if (lastItem !== '' && thisItem !== '') {
                 out += options.previousPrefix;
             }
@@ -107,11 +141,11 @@ wm.domains = function () {
         if (out === '') {
             return out;
         }
-        if (link) {
-            return this.addWalkLink(out);
-        } else {
-            return  out;
-    }
+//        if (link) {
+//            return this.addWalkLink(out);
+//        } else {
+        return  out;
+        // }
 
     };
     this.getPrefix = function (option) {
@@ -156,97 +190,6 @@ wm.domains = function () {
         } while ($loop);
         return options;
     };
-    this.displayDetails = function (event, domainName) {
-        alert(domainName);
-        var domain = this._domains[domainName];
-
-        domain.displayInModal(event);
-    };
-//    this._addWalkLink = function ($text, $class = "") {
-//        if ($text !== '') {
-//            return  "<span class='pointer " + $class + "' onclick=\"javascript:" + ra.walk.DisplayWalkFunction + "(event,'" + this.admin.id + "')\" title='Click to display walk details'>" + $text + "</span>";
-//        }
-//        return $text;
-//    };
-
-//    this.setFilters = function (tag) {
-//        var filter = new ra.filter(document, "reDisplayWalks");
-//        this.filter = filter;
-//        var groupOptions = {displaySingle: false};
-//        var typeOptions = {displaySingle: false};
-//        var statusOptions = {displaySingle: false};
-//
-//        var gradesOptions = {order: [
-//                'Easy Access',
-//                'Easy',
-//                'Leisurely',
-//                'Moderate',
-//                'Strenuous',
-//                'Technical']};
-//
-//        var dowOptions = {order: ['Monday',
-//                'Tuesday',
-//                'Wednesday',
-//                'Thursday',
-//                'Friday',
-//                'Saturday',
-//                'Sunday']};
-//        var shapeOptions = {displaySingle: false};
-//        var distanceOptions = {displaySingle: true,
-//            order: ['See description',
-//                'Up to 3 miles (5 km)',
-//                '3+ to 5 miles (5-8 km)',
-//                '5+ to 8 miles (8-13 km)',
-//                '8+ to 10 miles (13-16 km)',
-//                '10+ to 13 miles (16-21 km)',
-//                '13+ to 15 miles (21-24 km)',
-//                '15+ miles (24 km)']};
-//        var updateOptions = {
-//            order: [{title: 'All walks', limit: 0},
-//                {title: 'In last 3 months', limit: 93},
-//                {title: 'In last month', limit: 31},
-//                {title: 'In last 2 weeks', limit: 14},
-//                {title: 'In last week', limit: 7}
-//            ]};
-//        filter.addGroup(new ra.filter.groupText("idGroup", "Group", groupOptions));
-//        filter.addGroup(new ra.filter.groupText("idType", "Type", typeOptions));
-//        filter.addGroup(new ra.filter.groupText("idDOW", "Day of the week", dowOptions));
-//        filter.addGroup(new ra.filter.groupText("idShape", "Walk Shape/Type", shapeOptions));
-//        filter.addGroup(new ra.filter.groupText("idDistance", "Distance", distanceOptions));
-//        filter.addGroup(new ra.filter.groupText("idGrade", "Grade", gradesOptions));
-//        filter.addGroup(new ra.filter.groupDate("idDate", "Dates"));
-//        filter.addGroup(new ra.filter.groupLimit("idUpdate", "Updated", updateOptions));
-//        filter.addGroup(new ra.filter.groupText("idStatus", "Status", statusOptions));
-//        filter.addGroup(new ra.filter.groupText("idFacilities", "Facilities"));
-//        filter.addGroup(new ra.filter.groupText("idTransport", "Transport"));
-//        filter.addGroup(new ra.filter.groupText("idAccessibility", "Accessibility"));
-//
-//        this.domains.forEach(event => {
-//            event.initialiseFilter(filter);
-//        });
-//
-//        filter.display(tag);
-//        //  var fred = filter.getJson();
-//    };
-};
-wm.domain = function (item) {
-    this._domain = item.domain;
-    this._path = item.path;
-    this._webmonitorversion = item.webmonitorversion;
-    this._reportversion = item.reportversion;
-    this._nofilesscanned = item.nofilesscanned;
-    this._totalsizescanned = item.totalsizescanned;
-    this._directory = item.directory;
-    this._directories = item.directories;
-    this._files = item.files;
-    this._wordpressversions = item.wordpressversions;
-    this._joomlaversions = item.joomlaversions;
-    this._joomlabackups = item.joomlabackups;
-    this._config = item.config;
-    this._creationdate = item.creationdate;
-    this._latestfile = item.latestfile;
-    this._largestfiles = item.largestfiles;
-    this._status = "Unknown";
     this.getValue = function ($option) {
         var BR = '<br/>';
         var out = "";
@@ -255,22 +198,22 @@ wm.domain = function (item) {
                 out = BR;
                 break;
             case "{domain}":
-                out = this._domain;
+                out = "<span data-domaindetails='" + this._domain + "'>" + this._domain + "</span>";
                 break;
             case "{path}":
                 out = this._path;
                 break;
             case "{webmonitorversion}":
-                out = this._webmonitorversion;
+                out = this._webMonitorVersion;
                 break;
             case "{reportversion}":
-                out = this._reportversion;
+                out = this._reportVersion;
                 break;
             case "{nofilesscanned}":
-                out = this._nofilesscanned;
+                out = this._noFilesScanned.toLocaleString();
                 break;
             case "{totalsizescanned}":
-                out = this._totalsizescanned;
+                out = this._totalSizeScanned.toLocaleString();
                 break;
             case "{directory}":
                 out = this._directory;
@@ -279,16 +222,54 @@ wm.domain = function (item) {
                 out = this._config;
                 break;
             case "{creationdate}":
-                out = this._creationdate;
+                out = this._creationDate;
                 break;
-            case "{latestfile}":
-                out = this._latestfile;
+            case "{latestchange}":
+                out = "";
+                for (const i in this._latestFiles) {
+                    var item = this._latestFiles[i];
+                    out = item.date + " - " + item.path;
+                    break;
+                }
                 break;
-            case "{largestfiles}":
-                out = this._largestfiles;
+            case "{latestchangedate}":
+                out = "";
+                for (const i in this._latestFiles) {
+                    var item = this._latestFiles[i];
+                    out = item.date;
+                    break;
+                }
+                break;
+            case "{largestfile}":
+                out = "";
+                for (const i in this._largestFiles) {
+                    var item = this._largestFiles[i];
+                    out = item.size.toLocaleString() + " - " + item.path;
+                    break;
+                }
+                break;
+            case "{largestfilesize}":
+                out = "";
+                for (const i in this._largestFiles) {
+                    var item = this._largestFiles[i];
+                    out = item.size.toLocaleString();
+                    break;
+                }
                 break;
             case "{status}":
                 out = this._status;
+                break;
+            case "{topLevelDirectories}":
+                out = this.arrayAsVerticalList(this._topLevelDirectories);
+                break;
+            case "{controlFiles}":
+                out = this.getControlFiles();
+                break;
+            case "{joomlaVersions}":
+                out = this.getJoomlaVersions();
+                break;
+            case "{wordPressVersions}":
+                out = this.getWordPressVersions();
                 break;
             default:
         }
@@ -307,7 +288,7 @@ wm.domain = function (item) {
         return this._domain;
     };
     this.getJoomlaBackups = function () {
-        return this._joomlabackups;
+        return this._joomlaBackups;
     };
     this.displayInModal = function (event) {
         var div = document.createElement("div");
@@ -319,12 +300,153 @@ wm.domain = function (item) {
             this.detailsDisplay(div);
         }
     };
-     this.diagnostics = function (tag) {
-    var div = document.createElement("pre");
-        div.classList.add( "diagnostics");
+    this.diagnostics = function (tag) {
+        var div = document.createElement("pre");
+        div.classList.add("diagnostics");
         tag.appendChild(div);
-
         var t = JSON.stringify(this, null, 4);
         div.innerHTML = ra.syntaxHighlight(t);
+    };
+    this.detailsDisplay = function (tag) {
+        var div = document.createElement("h2");
+        div.textContent = this._domain;
+        tag.appendChild(div);
+        var div = document.createElement("h4");
+        div.textContent = "Path: " + this._path;
+        tag.appendChild(div);
+        var div = document.createElement("p");
+        div.textContent = "No file scanned: " + this._noFilesScanned.toLocaleString();
+        tag.appendChild(div);
+        var div = document.createElement("p");
+        div.textContent = "Total size scanned: " + this._totalSizeScanned.toLocaleString();
+        tag.appendChild(div);
+        var div = document.createElement("p");
+        div.textContent = "Date of scan: " + this._creationDate;
+        tag.appendChild(div);
+
+        tag.appendChild(document.createElement("hr"));
+        this.displayLatestChanges(tag);
+        tag.appendChild(document.createElement("hr"));
+
+        var div = document.createElement("h4");
+        div.textContent = "Top level folders";
+        tag.appendChild(div);
+        var ul = document.createElement("ul");
+        tag.appendChild(ul);
+        this._topLevelDirectories.forEach(item => {
+            if (item !== "") {
+                var li = document.createElement("li");
+                li.textContent = item;
+                ul.appendChild(li);
+            }
+        });
+        tag.appendChild(document.createElement("hr"));
+
+        this.displayJoomlaVersions(tag);
+        this.dispalyWordPressVersions(tag);
+
+        this.displayLargestFiles(tag);
+        tag.appendChild(document.createElement("hr"));
+
+        var div = document.createElement("p");
+        div.textContent = "Web Monitor version: " + this._webMonitorVersion;
+        tag.appendChild(div);
+        var div = document.createElement("p");
+        div.textContent = "Report version version: " + this._reportVersion;
+        tag.appendChild(div);
+    };
+    this.displayLatestChanges = function (tag) {
+        var div = document.createElement("h4");
+        div.textContent = "Latest Changes";
+        tag.appendChild(div);
+        var ul = document.createElement("ul");
+        tag.appendChild(ul);
+        for (const i in this._latestFiles) {
+            var item = this._latestFiles[i];
+            var li = document.createElement("li");
+            li.textContent = item.date + " - " + item.path;
+            ul.appendChild(li);
+        }
+    };
+    this.displayLargestFiles = function (tag) {
+        var div = document.createElement("h4");
+        div.textContent = "Largest Files";
+        tag.appendChild(div);
+        var ul = document.createElement("ul");
+        tag.appendChild(ul);
+        for (const i in this._largestFiles) {
+            var item = this._largestFiles[i];
+            var li = document.createElement("li");
+            li.textContent = item.size.toLocaleString() + " - " + item.path;
+            ul.appendChild(li);
+        }
+    };
+    this.displayJoomlaVersions = function (tag) {
+        if (Object.getOwnPropertyNames(this._joomlaVersions).length > 0) {
+            var div = document.createElement("h4");
+            div.textContent = "Joomla Installs";
+            tag.appendChild(div);
+            var ul = document.createElement("ul");
+            tag.appendChild(ul);
+            for (const key in this._joomlaVersions) {
+                var li = document.createElement("li");
+                li.textContent = this._joomlaVersions[key] + " - " + key;
+                ul.appendChild(li);
+            }
+            tag.appendChild(document.createElement("hr"));
+        }
+    };
+    this.dispalyWordPressVersions = function (tag) {
+        if (Object.getOwnPropertyNames(this._wordPressVersions).length > 0) {
+            var div = document.createElement("h4");
+            div.textContent = "WordPress Installs";
+            tag.appendChild(div);
+            var ul = document.createElement("ul");
+            tag.appendChild(ul);
+            for (const key in this._wordPressVersions) {
+                var li = document.createElement("li");
+                li.textContent = key + " - " + this._wordPressVersions[key];
+                ul.appendChild(li);
+            }
+            tag.appendChild(document.createElement("hr"));
+        }
+    };
+
+    this.displayControlFile = function (controlFile) {
+        var div = document.createElement("div");
+        div.style.display = "inline-block";
+        div.innerText = this._controlFiles[controlFile];
+        ra.modals.createModal(div);
+
+    };
+    this.getControlFiles = function () {
+        var out = "";
+        for (const item in this._controlFiles) {
+            out += "<span data-domain='" + this._domain + "' data-controlfile='" + item + "'>" + item + "</span><br/>";
+        }
+        return out;
+    };
+    this.getJoomlaVersions = function () {
+        var out = "";
+        for (const key in this._joomlaVersions) {
+            out += this._joomlaVersions[key] + " - " + key + "<br/>";
+        }
+        return out;
+    };
+    this.getWordPressVersions = function () {
+        var out = "";
+        for (const key in this._wordPressVersions) {
+            out += this._wordPressVersions[key] + " - " + key + "<br/>";
+        }
+        return out;
+    };
+    this.arrayAsVerticalList = function (arr) {
+        var out = "";
+        arr.forEach(item => {
+            if (item !== "") {
+                out += item + "<br/>";
+            }
+        });
+        return out;
     };
 };

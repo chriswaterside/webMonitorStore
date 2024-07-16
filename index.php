@@ -1,7 +1,7 @@
 <?php
 
 /*
- * Copyright (C) 2024 chris
+ * Copyright (C) 2024 Chris Vaughan
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -57,8 +57,10 @@ function getWebSiteData($path) {
     $result = [];
     $files = array_diff(scandir($path), array('.', '..'));
     foreach ($files as $file) {
-        $contents = file_get_contents($path . "/" . $file);
-        array_push($result, json_decode($contents));
+        if (str_starts_with($file, "sitestatus.")) {
+            $contents = file_get_contents($path . "/" . $file);
+            array_push($result, json_decode($contents));
+        }
     }
     return $result;
 }

@@ -1,5 +1,5 @@
 /* 
- * Copyright (C) 2024 chris
+ * Copyright (C) 2024 Chris Vaughan
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -20,6 +20,7 @@ var wm, jplist;
 if (typeof (wm) === "undefined") {
     wm = {};
 }
+wm.activeDisplay = null;
 wm.loader = function (options, data) {
     console.log("Loader");
     this.options = options;
@@ -43,10 +44,11 @@ wm.loader = function (options, data) {
         });
         var extraDomains = this.addDomainStatus();
         var div = document.getElementById(this.options.divId);
-        var display = new wm.domainsDisplay(this.domains, extraDomains);
-        display.load(div);
+        wm.activeDisplay = new wm.domainsDisplay(this.domains, extraDomains);
+        wm.activeDisplay.load(div);
 
     };
+ 
     this.addDomainStatus = function () {
         var extras = [];
         this.domainsList.forEach(item => {
@@ -57,6 +59,12 @@ wm.loader = function (options, data) {
                 extras.push(item);
             }
         });
+        extras.sort((a, b) => (
+                    a.domain > b.domain) ? 1 : ((b.domain > a.domain) ? -1 : 0));
         return extras;
     };
 };
+//wm.displayDomainDetails = function (event,domain) {
+//    alert(domain);
+//    wm.activeDisplay.getDomains();
+//};

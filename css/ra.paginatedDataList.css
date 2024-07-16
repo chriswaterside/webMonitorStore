@@ -19,6 +19,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
     Created on : 25 Jun 2024, 07:42:19
     Author     : chris
 */
+body{
+    font-family: Arial, Helvetica, sans-serif;
+}
 
 table.paginatedTable{
     border:2px solid;
@@ -31,6 +34,10 @@ table.paginatedTable tr th{
 table.paginatedTable tr th,
 table.paginatedTable tr td{
     padding:3px 6px 3px 6px;
+}
+table.paginatedTable tr th{
+    background-color: #822121;
+    color:#FFFFFF;
 }
 table.paginatedTable tr{
     background-color: #EEEEEE;

@@ -520,6 +520,13 @@ ra.date = (function () {
         var out = yyyymmdd + "T" + value.getHours().toString().padStart(2, '0') + value.getMinutes().toString().padStart(2, '0') + value.getSeconds().toString().padStart(2, '0');
         return out;
     };
+    date.YYYYMMDDmmhhss = function (datetime) {
+        var value = date.getDateTime(datetime);
+        var yyyymmdd = value.getFullYear().toString() + '-' + date.MM(value) + '-' + date.DD(value);
+        var time = value.getHours().toString().padStart(2, '0') + ':' + value.getMinutes().toString().padStart(2, '0') + ':' + value.getSeconds().toString().padStart(2, '0');
+        var out = yyyymmdd + " " + time; // + '.000000';
+        return out;
+    };
     date.toYYYYMMDDmmhhssFormat = function (datetime) {
         var value = date.getDateTime(datetime);
         var yyyymmdd = value.getFullYear().toString() + '-' + date.MM(value) + '-' + date.DD(value);
@@ -619,29 +626,33 @@ ra.date = (function () {
     };
     date.getDateTime = function (datetimestring) {
         // also used by time
-        var value = datetimestring;
-        if (typeof value === "string") {
-            // set each item so it works on mac
-            var arr = datetimestring.split(/[\-\+ :T]/);
-            var date = new Date(arr[0], arr[1] - 1, arr[2]);
-            if (arr.length > 3) {
-                date.setHours(arr[3]);
-            }
-            if (arr.length > 4) {
-                date.setMinutes(arr[4]);
-            }
-            if (arr.length > 5) {
-                date.setSeconds(arr[5]);
-            }
-            return date;
-        } else {
-            if ((datetimestring instanceof Date)) {
-                return value;
-            } else {
-                ra.showError("Error RA0001: invalid datetime");
-            }
+        var type = typeof datetimestring;
+        switch (type.toLowerCase()) {
+            case "string":
+                // set each item so it works on mac
+                var arr = datetimestring.split(/[\-\+ :T]/);
+                var date = new Date(arr[0], arr[1] - 1, arr[2]);
+                if (arr.length > 3) {
+                    date.setHours(arr[3]);
+                }
+                if (arr.length > 4) {
+                    date.setMinutes(arr[4]);
+                }
+                if (arr.length > 5) {
+                    date.setSeconds(arr[5]);
+                }
+                return date;
+            case "object":
+                if (datetimestring instanceof Date) {
+                    return datetimestring;
+                }
+            case "number":
+                var date = new Date(datetimestring);
+                return date;
 
         }
+        console.log("Error RA0001: invalid datetime");
+        return null;
     };
 //Day 	--- 	---
 //d 	Day of the month, 2 digits with leading zeros 	01 to 31

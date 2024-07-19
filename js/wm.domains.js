@@ -111,14 +111,18 @@ wm.domain = function (item) {
     this._joomlaVersions = item.joomlaVersions;
     this._joomlaBackups = item.joomlaBackups;
     this._config = item.config;
-    this._creationDate = item.creationDate;
+    this._creationDate = ra.date.getDateTime(item.creationDate);
     this._latestFiles = item.latestFiles;
     this._largestFiles = item.largestFiles;
-    this._status = "Unknown";
+    this._status = "";
 
     for (const i in this._largestFiles) {
         var item = this._largestFiles[i];
         item.size = Number(item.size);
+    }
+    for (const i in this._latestFiles) {
+        var item = this._latestFiles[i];
+        item.date = ra.date.getDateTime(item.date);
     }
 
     this.getValues = function (items, link = true) {
@@ -222,13 +226,19 @@ wm.domain = function (item) {
                 out = this._config;
                 break;
             case "{creationdate}":
-                out = this._creationDate;
+                var date = ra.date.YYYYMMDDmmhhss(this._creationDate);
+                var diff = ra.date.periodInDays(this._creationDate, Date.now());
+                if (diff > 7) {
+                    diff = 7;
+                }
+                out = "<span data-creation-days='" + diff;
+                out += "' title='Last scanned " + diff + " days ago'>" + date + "</span>";
                 break;
             case "{latestchange}":
                 out = "";
                 for (const i in this._latestFiles) {
                     var item = this._latestFiles[i];
-                    out = item.date + " - " + item.path;
+                    out = ra.date.YYYYMMDDmmhhss(item.date) + " - " + item.path;
                     break;
                 }
                 break;
@@ -236,7 +246,7 @@ wm.domain = function (item) {
                 out = "";
                 for (const i in this._latestFiles) {
                     var item = this._latestFiles[i];
-                    out = item.date;
+                    out = ra.date.YYYYMMDDmmhhss(item.date);
                     break;
                 }
                 break;
@@ -257,7 +267,7 @@ wm.domain = function (item) {
                 }
                 break;
             case "{status}":
-                out = this._status;
+                out = "<span class='status " + this._status + "'>" + this._status + "</span>";
                 break;
             case "{topLevelDirectories}":
                 out = this.arrayAsVerticalList(this._topLevelDirectories);
@@ -271,6 +281,8 @@ wm.domain = function (item) {
             case "{wordPressVersions}":
                 out = this.getWordPressVersions();
                 break;
+            case "{joomlaConfig}":
+                out = this.getJoomlaConfigs();
             default:
         }
         return out;
@@ -321,7 +333,7 @@ wm.domain = function (item) {
         div.textContent = "Total size scanned: " + this._totalSizeScanned.toLocaleString();
         tag.appendChild(div);
         var div = document.createElement("p");
-        div.textContent = "Date of scan: " + this._creationDate;
+        div.textContent = "Date of scan: " + ra.date.dowShortddmmyyyy(this._creationDate) + " " + ra.time.HHMM(this._creationDate);
         tag.appendChild(div);
 
         tag.appendChild(document.createElement("hr"));
@@ -341,12 +353,14 @@ wm.domain = function (item) {
             }
         });
         tag.appendChild(document.createElement("hr"));
-
-        this.displayJoomlaVersions(tag);
-        this.dispalyWordPressVersions(tag);
-
         this.displayLargestFiles(tag);
         tag.appendChild(document.createElement("hr"));
+
+        this.displayControlFiles(tag);
+        tag.appendChild(document.createElement("hr"));
+        this.displayWordPressVersions(tag);
+        this.displayJoomlaVersions(tag);
+        this.displayJoomlaConfigs(tag);
 
         var div = document.createElement("p");
         div.textContent = "Web Monitor version: " + this._webMonitorVersion;
@@ -364,7 +378,7 @@ wm.domain = function (item) {
         for (const i in this._latestFiles) {
             var item = this._latestFiles[i];
             var li = document.createElement("li");
-            li.textContent = item.date + " - " + item.path;
+            li.textContent = ra.date.YYYYMMDDmmhhss(item.date) + " - " + item.path;
             ul.appendChild(li);
         }
     };
@@ -396,7 +410,16 @@ wm.domain = function (item) {
             tag.appendChild(document.createElement("hr"));
         }
     };
-    this.dispalyWordPressVersions = function (tag) {
+    this.displayJoomlaConfigs = function (tag) {
+        var div = document.createElement("h4");
+        div.textContent = "Joomla Config";
+        tag.appendChild(div);
+        var contentDiv = document.createElement("div");
+        tag.appendChild(contentDiv);
+        contentDiv.innerHTML = this.getJoomlaConfigs();
+        tag.appendChild(document.createElement("hr"));
+    };
+    this.displayWordPressVersions = function (tag) {
         if (Object.getOwnPropertyNames(this._wordPressVersions).length > 0) {
             var div = document.createElement("h4");
             div.textContent = "WordPress Installs";
@@ -411,14 +434,40 @@ wm.domain = function (item) {
             tag.appendChild(document.createElement("hr"));
         }
     };
+    this.displayControlFiles = function (tag) {
+        var div = document.createElement("h4");
+        div.textContent = "Control Files";
+        tag.appendChild(div);
+        var ul = document.createElement("ul");
+        tag.appendChild(ul);
+        var _this = this;
+        for (const item in this._controlFiles) {
+            var li = document.createElement("li");
+            li.textContent = item;
+            li.classList.add("pointer");
+            li.setAttribute("data-controlfile", item);
+            ul.appendChild(li);
+            li.addEventListener("click", function (e) {
+                var controlFile = e.target.dataset.controlfile;
+                _this.displayControlFile(controlFile);
+            });
+        }
 
+    };
     this.displayControlFile = function (controlFile) {
         var div = document.createElement("div");
         div.style.display = "inline-block";
-        div.innerText = this._controlFiles[controlFile];
+        var heading = document.createElement("h4");
+        heading.textContent = "Control File - " + controlFile;
+        div.appendChild(heading);
+        var content = document.createElement("pre");
+        content.innerText = this._controlFiles[controlFile];
+        div.appendChild(content);
+
         ra.modals.createModal(div);
 
     };
+
     this.getControlFiles = function () {
         var out = "";
         for (const item in this._controlFiles) {
@@ -437,6 +486,24 @@ wm.domain = function (item) {
         var out = "";
         for (const key in this._wordPressVersions) {
             out += this._wordPressVersions[key] + " - " + key + "<br/>";
+        }
+        return out;
+    };
+    this.getJoomlaConfigs = function () {
+        var out = "<table>";
+        for (const key in this._config) {
+            out += "</tr>";
+            out += "<td>" + key + "</td>";
+            out += "<td>" + this.getJoomlaConfig(this._config[key]) + "</td>";
+            out += "</tr>";
+        }
+        out += "</table>";
+        return out;
+    };
+    this.getJoomlaConfig = function (item) {
+        var out = "";
+        for (const key in item) {
+            out += key + " - " + item[key] + "<br/>";
         }
         return out;
     };

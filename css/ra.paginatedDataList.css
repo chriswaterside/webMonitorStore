@@ -19,14 +19,28 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
     Created on : 25 Jun 2024, 07:42:19
     Author     : chris
 */
-body{
-    font-family: Arial, Helvetica, sans-serif;
+
+:root {
+    /* Ramblers colours */
+    /* 2021  */
+    --mintcake:#9BC8AB;
+    --sunset:#F08050;
+    --granite:#404141;
+    --rosycheeks:#F6B09D;
+    --sunrise:#F9B104;
+    --cloudy:#FFFFFF;
+    --skyBlue:#00A9FF;
+    --lightgrey: #C0C0C0;
+    --midgrey: #808080;
+
 }
+
 
 table.paginatedTable{
     border:2px solid;
     border-color: #b0b0b0;
     border-radius: 5px;
+    width:100%;
 }
 table.paginatedTable tr th{
     background-color: #b0b0b0;
@@ -57,4 +71,47 @@ table.paginatedTable tr td.left{
 table.paginatedTable tr th.center,
 table.paginatedTable tr td.center{
     text-align:center;
+}
+
+.XXXpagination {
+    display: flex;
+    padding-left: 0;
+    list-style: none;
+}
+
+[data-jplist-control] {
+    display: flex;
+    justify-content: space-between;
+}
+
+div.pagination.top {
+    padding-bottom: 20px;
+    clear:both;
+}
+div.pagination.bottom{
+    padding-top: 20px;
+    clear:both;
+}
+div.pagination {
+    margin:  0;
+    padding: 0;
+}
+div.ra.pagination span button {
+    background: var(--mintcake);
+    border-width: 0px;
+    border-radius:5px;
+    margin-right: 3px;
+    cursor:pointer;
+}
+div.ra.pagination span span button.jplist-selected {
+    background: var(--sunrise);
+    cursor:default;
+}
+div.ra.pagination span button.jplist-disabled {
+    background: var(--lightgrey);
+    cursor:default;
+}
+div[data-jplist-control] button{
+    min-height: 25px;
+    min-width: 25px;
 }

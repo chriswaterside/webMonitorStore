@@ -66,14 +66,21 @@ function getWebSiteData($path) {
 }
 
 function getDomainList($url) {
+    $domains = new stdClass();
+    $domains->data = [];
     if ($url === "") {
-        return [];
+        return $domains;
     }
     if ($url === null) {
-        return [];
+        return $domains;
     }
     $data = file_get_contents($url);
-    $domains = json_decode($data);
+    if ($data !== false) {
+        $domains = json_decode($data);
+    } else {
+        echo "Unable to retrieve domain list";
+    }
+
     return $domains;
 }
 

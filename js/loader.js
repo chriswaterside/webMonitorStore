@@ -48,9 +48,12 @@ wm.loader = function (options, data) {
         wm.activeDisplay.load(div);
 
     };
- 
+
     this.addDomainStatus = function () {
         var extras = [];
+        this.domains.forEachAll(domain => {
+             domain.setStatus("Unknown");
+        });
         this.domainsList.forEach(item => {
             var dom = this.domains.getDomain(item.domain);
             if (dom !== null) {
@@ -64,7 +67,3 @@ wm.loader = function (options, data) {
         return extras;
     };
 };
-//wm.displayDomainDetails = function (event,domain) {
-//    alert(domain);
-//    wm.activeDisplay.getDomains();
-//};

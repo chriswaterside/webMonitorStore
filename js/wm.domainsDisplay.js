@@ -1,5 +1,5 @@
 /* 
- * Copyright (C) 2024 chris
+ * Copyright (C) 2024 Chris Vaughan
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -77,12 +77,11 @@ wm.domainsDisplay = function (domains, extras) {
             default:
             // code block
         }
-        this.addDomainLinks();
-        this.addControlFileLinks();
+      
     };
 
     this.displayStatus = function (div) {
-        var format = [{"title": "Domain", "items": ["{domain}"],filter:{type:'text'}},
+        var format = [{"title": "Domain", "items": ["{domain}"], filter: {type: 'text'}},
             {"title": "Status", "items": ["{status}"], "options": {align: "right"}},
             {"title": "WM Version", "items": ["{webmonitorversion}"], "options": {align: "right"}},
             {"title": "Report Version", "items": ["{reportversion}"], "options": {align: "right"}},
@@ -107,6 +106,8 @@ wm.domainsDisplay = function (domains, extras) {
             dl.tableRowEnd();
 
         });
+        this.addDomainLinks();
+        this.addControlFileLinks();
         dl.tableEnd();
     };
     this.displayControlFiles = function (div) {
@@ -129,6 +130,8 @@ wm.domainsDisplay = function (domains, extras) {
             });
             dl.tableRowEnd();
         });
+        this.addDomainLinks();
+        this.addControlFileLinks();
         dl.tableEnd();
     };
     this.displayLatest = function (div) {
@@ -151,6 +154,8 @@ wm.domainsDisplay = function (domains, extras) {
             dl.tableRowEnd();
 
         });
+        this.addDomainLinks();
+        this.addControlFileLinks();
         dl.tableEnd();
     };
     this.displayCMS = function (div) {
@@ -174,6 +179,8 @@ wm.domainsDisplay = function (domains, extras) {
             dl.tableRowEnd();
 
         });
+        this.addDomainLinks();
+        this.addControlFileLinks();
         dl.tableEnd();
     };
     this.displayJoomlaConfig = function (div) {
@@ -196,6 +203,8 @@ wm.domainsDisplay = function (domains, extras) {
             dl.tableRowEnd();
 
         });
+        this.addDomainLinks();
+        this.addControlFileLinks();
         dl.tableEnd();
     };
     this.displayExtras = function (div) {
@@ -222,6 +231,8 @@ wm.domainsDisplay = function (domains, extras) {
             dl.tableRowItem(additionalInfo);
             dl.tableRowEnd();
         });
+        this.addDomainLinks();
+        this.addControlFileLinks();
         dl.tableEnd();
     };
     this.displayJoomlaBackup = function (div) {
@@ -254,6 +265,8 @@ wm.domainsDisplay = function (domains, extras) {
             }
 
         });
+        this.addDomainLinks();
+        this.addControlFileLinks();
         dl.tableEnd();
     };
     this.getBackupInfo = function (backup, option) {

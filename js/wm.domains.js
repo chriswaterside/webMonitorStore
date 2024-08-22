@@ -305,7 +305,7 @@ wm.domain = function (item) {
     this.displayInModal = function (event) {
         var div = document.createElement("div");
         div.style.display = "inline-block";
-        var modal = ra.modals.createModal(div);
+        ra.modals.createModal(div);
         if (event.ctrlKey && event.altKey) {
             this.diagnostics(div);
         } else {
@@ -460,7 +460,7 @@ wm.domain = function (item) {
         var heading = document.createElement("h4");
         heading.textContent = "Control File - " + controlFile;
         div.appendChild(heading);
-        var content = document.createElement("pre");
+        var content = document.createElement("code");
         content.innerText = this._controlFiles[controlFile];
         div.appendChild(content);
 

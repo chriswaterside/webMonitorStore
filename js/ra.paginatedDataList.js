@@ -50,8 +50,6 @@ ra.paginatedDataList = function (tag) {
     this.tableClass = "paginatedTable";
     this.oddRow = true;
 
-//  out += this.myjplist.addFilter('wTitle', 'Title', 'text');
-
     this.addPagination = function (no, tag) {
         this.myjplist.addPagination(no, tag, this.jplistName, this.itemsPerPage);
         return;
@@ -63,6 +61,11 @@ ra.paginatedDataList = function (tag) {
         this.tableClass = tableClass;
     };
     this.tableHeading = function (format) {
+        format.forEach(item => {
+            if ('filter' in item) {
+                this.addFilters(this.filtersDiv, item);
+            }
+        });
 
         this.table = document.createElement("table");
         this.table.classList.add(this.tableClass);
@@ -72,12 +75,16 @@ ra.paginatedDataList = function (tag) {
         this.table.appendChild(row);
         format.forEach(item => {
             var th = document.createElement("th");
-            th.textContent = item.title;
+            th.innerHTML = item.title;
             row.appendChild(th);
             if ('options' in item) {
                 if ('align' in item.options) {
                     th.classList.add(item.options.align);
                 }
+            }
+            if (item.sort) {
+                this.myjplist.sortButton(th, item.id, item.sort.type, "asc", "▲");
+                this.myjplist.sortButton(th, item.id, item.sort.type, "desc", "▼");
             }
         });
         this.oddRow = true;
@@ -93,15 +100,22 @@ ra.paginatedDataList = function (tag) {
         this.oddRow = !this.oddRow;
         return this.row;
     };
-    this.tableRowItem = function (value, options = null) {
+    this.tableRowItem = function (value, item = null) {
         var td = document.createElement("td");
         td.innerHTML = value;
         this.row.appendChild(td);
-        if (options !== null) {
-            if ('align' in options) {
-                td.classList.add(options.align);
+        if (item!==null) {
+            if ('id' in item) {
+                td.classList.add(item.id);
+            }
+            var options = item.options;
+            if (options) {
+                if ('align' in options) {
+                    td.classList.add(options.align);
+                }
             }
         }
+
         return td;
     };
     this.tableRowEnd = function () {
@@ -112,21 +126,20 @@ ra.paginatedDataList = function (tag) {
             this.myjplist.init('ra-display');
         }
     };
-    this.addFilters = function (tag) {
-        var out = '';
-        out += this.myjplist.addFilter('wTitle', 'Title', 'text');
-        var min, max;
-        var result = this.routes;
-        min = result.reduce(function (a, b) {
-            var km = Math.floor(b.distance / 1000);
-            return Math.min(a, km);
-        }, 99999);
-        max = result.reduce(function (a, b) {
-            var km = Math.ceil(b.distance / 1000);
-            return Math.max(a, km);
-        }, -99999);
-        out += this.myjplist.addFilter('wDistance', 'Distance Km', 'number', min, max);
-        tag.innerHTML = out;
+    this.addFilters = function (tag, item) {
+        var filter = item.filter;
+        var min = 0;
+        var max = 999999;
+        if (item.type === "number") {
+            var result = item.values.map(Number);
+            min = result.reduce(function (a, b) {
+                return Math.min(a, b);
+            }, 99999);
+            max = result.reduce(function (a, b) {
+                return Math.max(a, b);
+            }, -99999);
+        }
+        tag.innerHTML += this.myjplist.addFilter(item.id, item.title, filter.type, min, max);
 
     };
 };

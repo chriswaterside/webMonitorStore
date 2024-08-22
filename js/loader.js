@@ -34,8 +34,7 @@ wm.loader = function (options, data) {
     this.load = function () {
         console.log("Load");
         this.data.forEach(item => {
-            var domain = item.domain;
-            console.log(domain);
+           //console.log(item.domain);
         });
 
         this.data.forEach(item => {

@@ -6,9 +6,9 @@ ra._isES6 = null;
 ra._baseDirectory = '';
 ra._jversion = "1.5.0";
 ra.uniquenumber = 0;
-document.addEventListener('DOMContentLoaded', function () {
-    ra.checkLoadingErrors();
-}, false);
+//document.addEventListener('DOMContentLoaded', function () {
+//    ra.checkLoadingErrors();
+//}, false);
 
 ra.defaultMapOptions = {
     divId: "",
@@ -65,20 +65,20 @@ ra.uniqueID = function () {
     return 'uniqueid' + ra.uniquenumber; // lowercase because of jplist issue
 };
 ra.bootstrapper = function (jversion, displayClass, mapOptions, _data) {
-    window.addEventListener("error", (event) => {
-        var instr = '<p>Unexpected error, this might be solved by reloading/refreshing the web page</p><ul>' +
-                '<li>In most browsers you can reload the page by pressing Ctrl+F5. </li>';
-        var body = event.message + '\n\r' + 'Filename: ' + event.filename + '\n\r';
-        body = encodeURIComponent(body + event.error.stack);
-        var subject = encodeURIComponent("Unexpected error: " + window.location.href);
-        var email = 'mailto:unexpected@ramblers-webs.org.uk?subject=' + subject + '&body=' + body;
-        var emailLink = "<li>If problem continues then please <a href='" + email + "' >Report error using email</a></li></ul>";
-        var cont = "<p><b>When you click the <i>Close button</i> the web page will try and continue but may not function correctly</b></p>";
-        ra.showError(instr + emailLink + cont, "Fatal error");
-        event.stopImmediatePropagation();
-        ra.loading.stop();
-
-    });
+//    window.addEventListener("error", (event) => {
+//        var instr = '<p>Unexpected error, this might be solved by reloading/refreshing the web page</p><ul>' +
+//                '<li>In most browsers you can reload the page by pressing Ctrl+F5. </li>';
+//        var body = event.message + '\n\r' + 'Filename: ' + event.filename + '\n\r';
+//        body = ra.html.specialCharsToHex(body + event.error.stack).replace(/\n/g, '%0D%0A');
+//        var subject = encodeURIComponent("Unexpected error: " + window.location.href);
+//        var email = 'mailto:unexpected@ramblers-webs.org.uk?subject=' + subject + '&body=' + body;
+//        var emailLink = "<li>If problem continues then please <a href='" + email + "' >Report error using email</a></li></ul>";
+//        var cont = "<p><b>When you click the <i>Close button</i> the web page will try and continue but may not function correctly</b></p>";
+//        ra.showError(instr + emailLink + cont, "Fatal error");
+//        event.stopImmediatePropagation();
+//        ra.loading.stop();
+//
+//    });
 
     ra.loading.start();
     ra._jversion = jversion;
@@ -975,6 +975,11 @@ ra.html = (function () {
         };
         return text.replace(/[&<>"']/g, function (m) {
             return map[m];
+        });
+    };
+    html.specialCharsToHex = function (str) {
+        return str.replace(/[^\w\s]/g, function (char) {
+            return '%' + char.charCodeAt(0).toString(16).padStart(2, '0');
         });
     };
     // escape why?
@@ -2410,6 +2415,7 @@ ra.jplist = function (group) {
                 {name: 'select', parent: 'div', tag: 'select', attrs: {class: 'ra nonmobile', 'data-type': 'items-per-page'}},
                 {parent: 'select', tag: 'option', attrs: {value: '10'}, textContent: '10 per page'},
                 {parent: 'select', tag: 'option', attrs: {value: '20'}, textContent: '20 per page'},
+                {parent: 'select', tag: 'option', attrs: {value: '25'}, textContent: '25 per page'},
                 {parent: 'select', tag: 'option', attrs: {value: '50'}, textContent: '50 per page'},
                 {parent: 'select', tag: 'option', attrs: {value: '100'}, textContent: '100 per page'},
                 {parent: 'select', tag: 'option', attrs: {value: '0'}, textContent: 'View all'}

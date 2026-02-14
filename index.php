@@ -24,20 +24,25 @@ define('BASE_PATH', dirname(realpath(dirname(__FILE__))));
 chdir($exepath);
 require('classes/autoload.php');
 spl_autoload_register('autoload');
-Logfile::create("logfiles/logfile");
+Logfile::create("logfiles/viewData");
 if (file_exists('config.php')) {
     require('config.php');
+    Logfile::writeWhen("Production config");
 } else {
     require('config_master.php');
+    Logfile::writeWhen("Test config");
 }
 $config = new configuration();
+Logfile::writeWhen("Config created");
 // retrieve all json files 
 $wmdata = getWebSiteData("wmstore");
 // retrieve list of domains if provided
 if (property_exists($config, "domainListUrl")) {
     $domains = getDomainList($config->domainListUrl);
+    Logfile::writeWhen("List of domains created");
 } else {
     $domains = [];
+    Logfile::writeWhen("List of domains not available");
 }
 $data = (object) [
             'wmData' => $wmdata,
@@ -69,16 +74,19 @@ function getDomainList($url) {
     $domains = new stdClass();
     $domains->data = [];
     if ($url === "") {
+        Logfile::writeWhen("Domain list is blank");
         return $domains;
     }
     if ($url === null) {
+        Logfile::writeWhen("Domain list is null");
         return $domains;
     }
     $data = file_get_contents($url);
+    Logfile::writeWhen("Domain list read: " . $url);
     if ($data !== false) {
         $domains = json_decode($data);
     } else {
-        echo "Unable to retrieve domain list";
+        Logfile::writeWhen("Unable to retrieve domain list");
     }
 
     return $domains;

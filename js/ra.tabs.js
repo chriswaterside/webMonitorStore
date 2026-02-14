@@ -1,5 +1,5 @@
 /* 
- * Copyright (C) 2024 chris
+ * Copyright (C) 2024 chris vaughan
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -26,7 +26,8 @@ ra.tabs = function (options) {
 //        tabs: {id0: {title: "one"},
 //            id10: {title: "two"},
 //            id20: {title: "three"},
-//            id30: {title: "extras", enabled: false}}};
+//            id30: {title: "extras", enabled: false}},
+//            tabClass: 'myclass'};
 
     this.options = options;
     this.buttons = [];
@@ -38,13 +39,15 @@ ra.tabs = function (options) {
         ];
         this.tabsContainer = this.options.div;
         this.elements = ra.html.generateTags(this.options.div, tags);
-
+        if ('tabClass' in options) {
+            this.elements.container.classList.add(options.tabClass);
+        }
         for (const property in this.options.tabs) {
             var id = property;
             var item = this.options.tabs[id];
             var enabled = true;
             var title = item.title;
-          if ( typeof(item.enabled) !== "undefined" && item.enabled !== null ) {
+            if (typeof (item.enabled) !== "undefined" && item.enabled !== null) {
                 enabled = item.enabled;
             }
             if (enabled) {
@@ -74,6 +77,8 @@ ra.tabs = function (options) {
         const displayEvent = new Event("displayTabContents");
         displayEvent.tabDisplay = {tab: id,
             displayInElement: this.elements.contentContainer};
+        // set attribute to allow different styling for each content
+        this.elements.contentContainer.setAttribute('data-tab', id);
         this.elements.contentContainer.textContent = "";
         this.tabsContainer.dispatchEvent(displayEvent);
     };

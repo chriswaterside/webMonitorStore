@@ -34,11 +34,6 @@ wm.domains = function () {
         }
     };
     this.forEachFiltered = function (fcn) {
-//        this._domains.forEachAll(domain => {
-//            if (domain._displayFiltered) {
-//                fcn(domain);
-//            }
-//        });
         for (var propt in this._domains) {
             var domain = this._domains[propt];
             if (domain._displayFiltered) {

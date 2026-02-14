@@ -53,5 +53,15 @@ class configuration {
 
     // you can provide a url that returns a list of the domains for which you expect to see web monitor data
     // this enables the software to notify you of domains that are not storing their data
-    public static $domainListUrl = "";
+    public $domainListUrl = "";
+    // {
+    // "data": [{
+    //        "domain": "domain1.co.uk",
+    //        "status": "Hosted"
+    //    }, {
+    //        "domain": "domain2.co.uk",
+    //        "status": "Hosted"
+    //    }]
+    //   }
+    // other variables are allowed
 }

@@ -1,5 +1,5 @@
 /* 
- * Copyright (C) 2024 chris
+ * Copyright (C) 2025 chris vaughan
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -16,87 +16,101 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-
 var ra;
 if (typeof (ra) === "undefined") {
     ra = {};
 }
 
-
-ra.paginatedDataList = function (tag) {
-    this.filtersDiv = document.createElement("div");
-    this.filtersDiv.classList.add("pagination-filter");
-    tag.appendChild(this.filtersDiv);
-    this.rapagination1 = document.createElement("div");
-    this.rapagination1.classList.add("pagination");
-    this.rapagination1.classList.add("top");
-    tag.appendChild(this.rapagination1);
-    this.contentDiv = document.createElement("div");
-    tag.appendChild(this.contentDiv);
-    this.rapagination2 = document.createElement("div");
-    this.rapagination2.classList.add("pagination");
-    this.rapagination2.classList.add("bottom");
-    tag.appendChild(this.rapagination2);
-
-    this.jplistGroup = ra.uniqueID();
-
-    //   this.myjplist = new ra.jplist(this.settings.jplistGroup);
-    this.itemsPerPage = 20;
-    jplistName: "name1";
-    this.jplistName = 'jpl' + ra.uniqueID();
-
-    this.myjplist = new ra.jplist(this.jplistGroup);
-    this.noPagination = false;
-    this.tableClass = "paginatedTable";
-    this.oddRow = true;
-
-    this.addPagination = function (no, tag) {
-        this.myjplist.addPagination(no, tag, this.jplistName, this.itemsPerPage);
-        return;
+ra.paginatedTable = function (tag) {
+    this.options = {pagination: {
+            "10 per page": 10,
+            "20 per page": 20,
+            "25 per page": 25,
+            "50 per page": 50,
+            "100 per page": 100,
+            "View all": 0
+        },
+        itemsPerPage: 20,
+        className: "paginatedList"
     };
-    this.addPagination(22, this.rapagination1);
-    this.addPagination(22, this.rapagination2);
+    this.oddRow = false;
+    this.fields = [];
+    var tags = [
+        {name: 'home', parent: 'root', tag: 'div', attrs: {class: this.options.className}},
+        {name: 'filtersDiv', parent: 'home', tag: 'div', attrs: {class: 'filter'}},
+        {name: 'rapagination1', parent: 'home', tag: 'div', attrs: {class: 'pagination top'}},
+        {name: 'items1', parent: 'rapagination1', tag: 'div'},
+        {name: 'pagination1', parent: 'rapagination1', tag: 'div'},
+        {name: 'itemsSelect1', parent: 'rapagination1', tag: 'div'},
+        {name: 'table', parent: 'home', tag: 'table', attrs: {class: 'table'}},
+        {name: 'thead', parent: 'table', tag: 'thead'},
+        {name: 'tbody', parent: 'table', tag: 'tbody'},
+        {name: 'rapagination2', parent: 'home', tag: 'div', attrs: {class: 'pagination bottom'}},
+        {name: 'items2', parent: 'rapagination2', tag: 'div'},
+        {name: 'pagination2', parent: 'rapagination2', tag: 'div'},
+        {name: 'itemsSelect2', parent: 'rapagination2', tag: 'div'}
+    ];
 
-    this.setTableClass = function (tableClass) {
-        this.tableClass = tableClass;
-    };
-    this.tableHeading = function (format) {
+    this.elements = ra.html.generateTags(tag, tags);
+
+    this.list = new cvList(this.elements.tbody);
+
+    var pag = this.list.createPagination(this.options.pagination, this.options.itemsPerPage);
+    pag.addPaginationDisplay(this.elements.items1, 'Item {startItem} to {endItem} of {itemsNumber}');
+    pag.addPaginationDisplay(this.elements.pagination1, '{paginationButtons}');
+    pag.addPaginationDisplay(this.elements.itemsSelect1, '{itemsPerPage}');
+    pag.addPaginationDisplay(this.elements.items2, 'Item {startItem} to {endItem} of {itemsNumber}');
+    pag.addPaginationDisplay(this.elements.pagination2, '{paginationButtons}');
+    pag.addPaginationDisplay(this.elements.itemsSelect2, '{itemsPerPage}');
+
+    this._createFields = function (format) {
         format.forEach(item => {
-            if ('filter' in item) {
-                this.addFilters(this.filtersDiv, item);
+            if ('field' in item) {
+                this.fields[item.title] = this.list.createField(item.title, item.field.type);
             }
         });
-
-        this.table = document.createElement("table");
-        this.table.classList.add(this.tableClass);
-        this.table.setAttribute("data-jplist-group", this.jplistGroup);
-        this.contentDiv.appendChild(this.table);
+    };
+    this.createFilters = function (format) {
+        format.forEach(item => {
+            if ('field' in item) {
+                var field = item.field;
+                if (field.filter) {
+                    this.fields[item.title].setFilter(this.elements.filtersDiv);
+                }
+            }
+        });
+    };
+    //     var format = [{"title": "Domain", "options": {align: "left"}},
+    //                   {"title": "File", "options": {align: "left"}}];
+    this.tableHeading = function (format) {
+        this._createFields(format);
+        this.createFilters(format);
         var row = document.createElement("tr");
-        this.table.appendChild(row);
         format.forEach(item => {
             var th = document.createElement("th");
-            th.innerHTML = item.title;
             row.appendChild(th);
             if ('options' in item) {
                 if ('align' in item.options) {
                     th.classList.add(item.options.align);
                 }
             }
-            if (item.sort) {
-                this.myjplist.sortButton(th, item.id, item.sort.type, "asc", "▲");
-                this.myjplist.sortButton(th, item.id, item.sort.type, "desc", "▼");
+            if ('field' in item) {
+                if (item.field.sort) {
+                    var field = this.fields[item.title];
+                    field.addSortArrows(th);
+                }
             }
+            var h = document.createElement("span");
+            h.innerHTML = item.title;
+            th.appendChild(h);
         });
-        this.oddRow = true;
+        this.elements.thead.appendChild(row);
     };
     this.tableRowStart = function () {
-        //  $out += "<tr data-jplist-item ><td>";
         this.row = document.createElement("tr");
-        this.row.setAttribute("data-jplist-item", true);
-        if (this.oddRow === true) {
+        if (this.oddRow) {
             this.row.classList.add("odd");
         }
-        this.table.appendChild(this.row);
         this.oddRow = !this.oddRow;
         return this.row;
     };
@@ -104,9 +118,10 @@ ra.paginatedDataList = function (tag) {
         var td = document.createElement("td");
         td.innerHTML = value;
         this.row.appendChild(td);
-        if (item!==null) {
-            if ('id' in item) {
-                td.classList.add(item.id);
+        if (item !== null) {
+            if ('field' in item) {
+                var field = this.fields[item.title];
+                field.setValue(td, value);
             }
             var options = item.options;
             if (options) {
@@ -115,31 +130,64 @@ ra.paginatedDataList = function (tag) {
                 }
             }
         }
-
         return td;
     };
     this.tableRowEnd = function () {
-
+        this.list.addItem(this.row);
+        this.row=null;
     };
     this.tableEnd = function () {
-        if (!this.noPagination) {
-            this.myjplist.init('ra-display');
-        }
+        this.list.display();
     };
-    this.addFilters = function (tag, item) {
-        var filter = item.filter;
-        var min = 0;
-        var max = 999999;
-        if (item.type === "number") {
-            var result = item.values.map(Number);
-            min = result.reduce(function (a, b) {
-                return Math.min(a, b);
-            }, 99999);
-            max = result.reduce(function (a, b) {
-                return Math.max(a, b);
-            }, -99999);
-        }
-        tag.innerHTML += this.myjplist.addFilter(item.id, item.title, filter.type, min, max);
+};
+ra.paginatedList = function (tag) {
+    this.options = {pagination: {
+            "10 per page": 10,
+            "20 per page": 20,
+            "25 per page": 25,
+            "50 per page": 50,
+            "100 per page": 100,
+            "View all": 0
+        },
+        itemsPerPage: 20,
+        className: "paginatedList"
+    };
+    this.oddRow = true;
+    this.fields = [];
+    var tags = [
+        {name: 'home', parent: 'root', tag: 'div', attrs: {class: this.options.className}},
+        {name: 'filtersDiv', parent: 'home', tag: 'div', attrs: {class: 'filter'}},
+        {name: 'rapagination1', parent: 'home', tag: 'div', attrs: {class: 'pagination top'}},
+        {name: 'items1', parent: 'rapagination1', tag: 'div'},
+        {name: 'pagination1', parent: 'rapagination1', tag: 'div'},
+        {name: 'itemsSelect1', parent: 'rapagination1', tag: 'div'},
+        {name: 'content', parent: 'home', tag: 'div'},
+        {name: 'rapagination2', parent: 'home', tag: 'div', attrs: {class: 'pagination bottom'}},
+        {name: 'items2', parent: 'rapagination2', tag: 'div'},
+        {name: 'pagination2', parent: 'rapagination2', tag: 'div'},
+        {name: 'itemsSelect2', parent: 'rapagination2', tag: 'div'}
+    ];
 
+    this.elements = ra.html.generateTags(tag, tags);
+
+    this.list = new cvList(this.elements.content);
+    var pag = this.list.createPagination(this.options.pagination, this.options.itemsPerPage);
+    pag.addPaginationDisplay(this.elements.items1, 'Item {startItem} to {endItem} of {itemsNumber}');
+    pag.addPaginationDisplay(this.elements.pagination1, '{paginationButtons}');
+    pag.addPaginationDisplay(this.elements.itemsSelect1, '{itemsPerPage}');
+    pag.addPaginationDisplay(this.elements.items2, 'Item {startItem} to {endItem} of {itemsNumber}');
+    pag.addPaginationDisplay(this.elements.pagination2, '{paginationButtons}');
+    pag.addPaginationDisplay(this.elements.itemsSelect2, '{itemsPerPage}');
+
+    this.listItem = function (tag) {
+        if (this.oddRow) {
+            tag.classList.add("odd");
+        }
+        this.oddRow = !this.oddRow;
+        this.list.addItem(tag);
+
+    };
+    this.listEnd = function () {
+        this.list.display();
     };
 };

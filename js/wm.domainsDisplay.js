@@ -33,18 +33,18 @@ wm.domainsDisplay = function (domains, extras) {
     if (extras !== null) {
         this.options.tabs["notFound"].enabled = true;
     }
-    this.formats = {"domain": {"title": "Domain", "items": ["{domain}"], id: "var1", filter: {type: 'text'}, sort: {type: "text"}},
-        status: {"title": "Status", "items": ["{status}"], id: "var2", filter: {type: 'text'}, sort: {type: "text"}, "options": {align: "right"}},
-        wmVersion: {"title": "WM<br/>Version", "items": ["{webmonitorversion}"], id: "var3", sort: {type: "number"}, "options": {align: "right"}},
-        reportVersion: {"title": "Report<br/>Version", "items": ["{reportversion}"], id: "var4", sort: {type: "number"}, "options": {align: "right"}},
-        noFilesScanned: {"title": "No files<br/>scanned", "items": ["{nofilesscanned}"], id: "var5", sort: {type: "number"}, "options": {align: "right"}},
-        sizeScanned: {"title": "Total size<br/>scanned", "items": ["{totalsizescanned}"], id: "var6", sort: {type: "number"}, "options": {align: "right"}},
-        latestChangeDate: {"title": "Latest change", "items": ["{latestchangedate}"], id: "var7", sort: {type: "text"}, "options": {align: "right"}},
-        largestFile: {"title": "Largest file", "items": ["{largestfilesize}"], id: "var18", sort: {type: "number"}, "options": {align: "right"}},
-        creationDate: {"title": "Log file", "items": ["{creationdate}"], id: "var9", sort: {type: "text"}, "options": {align: "right"}},
+    this.formats = {"domain": {"title": "Domain", "items": ["{domain}"], field: {type: 'text', filter: true, sort: true}},
+        status: {"title": "Status", "items": ["{status}"], field: {type: 'text', filter: true, sort: true}, "options": {align: "right"}},
+        wmVersion: {"title": "WM Version", "items": ["{webmonitorversion}"], field: {type: 'number', filter: false, sort: true}, "options": {align: "right"}},
+        reportVersion: {"title": "Report Version", "items": ["{reportversion}"], field: {type: 'number', filter: false, sort: true}, "options": {align: "right"}},
+        noFilesScanned: {"title": "No files scanned", "items": ["{nofilesscanned}"], field: {type: 'number', filter: false, sort: true}, "options": {align: "right"}},
+        sizeScanned: {"title": "Total size scanned", "items": ["{totalsizescanned}"], field: {type: 'number', filter: false, sort: true}, "options": {align: "right"}},
+        latestChangeDate: {"title": "Latest change", "items": ["{latestchangedate}"], field: {type: 'text', filter: false, sort: true}, "options": {align: "right"}},
+        largestFile: {"title": "Largest file", "items": ["{largestfilesize}"], field: {type: 'number', filter: false, sort: true}, "options": {align: "right"}},
+        creationDate: {"title": "Log file", "items": ["{creationdate}"], field: {type: 'text', filter: false, sort: true}, "options": {align: "right"}},
         folders: {"title": "Folder", "items": ["{topLevelDirectories}"], "options": {align: "left"}},
         controlFiles: {"title": "Control Files", "items": ["{controlFiles}"], "options": {align: "left"}},
-        latestChange: {"title": "Latest Change", "items": ["{latestchange}"], "options": {align: "left"}},
+        latestChange: {"title": "Latest Change", "items": ["{latestchange}"], field: {type: 'text', filter: false, sort: true}},
         joomla: {"title": "Joomla", "items": ["{joomlaVersions}"], "options": {align: "left"}},
         wordpress: {"title": "WordPress", "items": ["{wordPressVersions}"], "options": {align: "left"}},
         joomlaConfig: {"title": "Config", "items": ["{joomlaConfig}"], "options": {align: "left"}}
@@ -90,7 +90,6 @@ wm.domainsDisplay = function (domains, extras) {
             default:
             // code block
         }
-
     };
     this.displayStatus = function (div) {
         var format = [this.formats.domain,
@@ -106,19 +105,7 @@ wm.domainsDisplay = function (domains, extras) {
         var title = document.createElement("h2");
         title.textContent = "Status of Web Monitor files";
         div.appendChild(title);
-        var dl = new ra.paginatedDataList(div);
-        dl.tableHeading(format);
-        this.domains.forEachAll(domain => {
-            dl.tableRowStart();
-            format.forEach(item => {
-                var value = domain.getValues(item.items);
-                dl.tableRowItem(value, item);
-            });
-            dl.tableRowEnd();
-        });
-        this.addDomainLinks();
-        this.addControlFileLinks();
-        dl.tableEnd();
+        this._displayTable(div, format);
     };
     this.displayControlFiles = function (div) {
         var format = [this.formats.domain,
@@ -127,19 +114,7 @@ wm.domainsDisplay = function (domains, extras) {
         var title = document.createElement("h2");
         title.textContent = "Control Files in top two levels of folder";
         div.appendChild(title);
-        var dl = new ra.paginatedDataList(div);
-        dl.tableHeading(format);
-        this.domains.forEachAll(domain => {
-            dl.tableRowStart();
-            format.forEach(item => {
-                var value = domain.getValues(item.items);
-                dl.tableRowItem(value, item);
-            });
-            dl.tableRowEnd();
-        });
-        this.addDomainLinks();
-        this.addControlFileLinks();
-        dl.tableEnd();
+        this._displayTable(div, format);
     };
     this.displayLatest = function (div) {
         var format = [this.formats.domain,
@@ -147,19 +122,7 @@ wm.domainsDisplay = function (domains, extras) {
         var title = document.createElement("h2");
         title.textContent = "The last change in each account";
         div.appendChild(title);
-        var dl = new ra.paginatedDataList(div);
-        dl.tableHeading(format);
-        this.domains.forEachAll(domain => {
-            dl.tableRowStart();
-            format.forEach(item => {
-                var value = domain.getValues(item.items);
-                dl.tableRowItem(value, item);
-            });
-            dl.tableRowEnd();
-        });
-        this.addDomainLinks();
-        this.addControlFileLinks();
-        dl.tableEnd();
+        this._displayTable(div, format);
     };
     this.displayCMS = function (div) {
         var format = [this.formats.domain,
@@ -168,19 +131,7 @@ wm.domainsDisplay = function (domains, extras) {
         var title = document.createElement("h2");
         title.textContent = "Joomla/WordPress installs in top two levels of folder";
         div.appendChild(title);
-        var dl = new ra.paginatedDataList(div);
-        dl.tableHeading(format);
-        this.domains.forEachAll(domain => {
-            dl.tableRowStart();
-            format.forEach(item => {
-                var value = domain.getValues(item.items);
-                dl.tableRowItem(value, item);
-            });
-            dl.tableRowEnd();
-        });
-        this.addDomainLinks();
-        this.addControlFileLinks();
-        dl.tableEnd();
+        this._displayTable(div, format);
     };
     this.displayJoomlaConfig = function (div) {
         var format = [this.formats.domain,
@@ -188,29 +139,16 @@ wm.domainsDisplay = function (domains, extras) {
         var title = document.createElement("h2");
         title.textContent = "Joomla configuration settings";
         div.appendChild(title);
-        var dl = new ra.paginatedDataList(div);
-        dl.tableHeading(format);
-        this.domains.forEachAll(domain => {
-            dl.tableRowStart();
-            format.forEach(item => {
-                var value = domain.getValues(item.items);
-                dl.tableRowItem(value, item);
-            });
-            dl.tableRowEnd();
-        });
-        this.addDomainLinks();
-        this.addControlFileLinks();
-        dl.tableEnd();
+        this._displayTable(div, format);
     };
     this.displayExtras = function (div) {
         var format = [this.formats.domain,
             this.formats.status,
             {"title": "Additional Info", "options": {align: "right"}}];
-
         var title = document.createElement("h2");
         title.textContent = "Domains that have no Web Monitor information";
         div.appendChild(title);
-        var dl = new ra.paginatedDataList(div);
+        var dl = new ra.paginatedTable(div);
         dl.tableHeading(format);
         this.extras.forEach(item => {
             var additionalInfo = '';
@@ -225,8 +163,8 @@ wm.domainsDisplay = function (domains, extras) {
             dl.tableRowItem(additionalInfo);
             dl.tableRowEnd();
         });
-        this.addDomainLinks();
-        this.addControlFileLinks();
+        //  this.addDomainLinks();
+        //  this.addControlFileLinks();
         dl.tableEnd();
     };
     this.displayJoomlaBackup = function (div) {
@@ -240,14 +178,14 @@ wm.domainsDisplay = function (domains, extras) {
         var title = document.createElement("h2");
         title.textContent = "Domains that have Joomla jpa backup files";
         div.appendChild(title);
-        var dl = new ra.paginatedDataList(div);
+        var dl = new ra.paginatedTable(div);
         dl.tableHeading(format);
         this.domains.forEachAll(domain => {
             var backups = domain.getJoomlaBackups();
             if (backups.length > 0) {
                 dl.tableRowStart();
                 var td = dl.tableRowItem(domain.getValue("{domain}"));
-                this.addDetailsLink(td, domain.getDomainName());
+                this.addDomainLink(td);
                 dl.tableRowItem(domain.getValue("{status}"));
                 dl.tableRowItem(this.getBackupInfo(backups, "folder"));
                 dl.tableRowItem(this.getBackupInfo(backups, "nofiles"));
@@ -255,10 +193,26 @@ wm.domainsDisplay = function (domains, extras) {
                 dl.tableRowItem(this.getBackupInfo(backups, "file"));
                 dl.tableRowEnd();
             }
-
         });
-        this.addDomainLinks();
-        this.addControlFileLinks();
+        dl.tableEnd();
+    };
+    this._displayTable = function (div, format) {
+        var dl = new ra.paginatedTable(div);
+        dl.tableHeading(format);
+        this.domains.forEachAll(domain => {
+            dl.tableRowStart();
+            format.forEach(item => {
+                var value = domain.getValues(item.items);
+                var td = dl.tableRowItem(value, item);
+                if (item.title === 'Domain') {
+                    this.addDomainLink(td);
+                }
+                if (item.title === 'Control Files') {
+                    this.addControlFileLink(td);
+                }
+            });
+            dl.tableRowEnd();
+        });
         dl.tableEnd();
     };
     this.getBackupInfo = function (backup, option) {
@@ -274,27 +228,22 @@ wm.domainsDisplay = function (domains, extras) {
             _this.domains.displayDetails(e, domainName);
         });
     };
-    this.addDomainLinks = function () {
+    this.addDomainLink = function (node) {
         var _this = this;
-        var nodes = document.querySelectorAll('[data-domaindetails]');
-        nodes.forEach(node => {
-            node.classList.add("pointer");
-            node.addEventListener("click", function (e) {
-                var domainName = e.target.dataset.domaindetails;
-                _this.domains.displayDetails(e, domainName);
-            });
+        node.classList.add("pointer");
+        node.addEventListener("click", function (e) {
+            var domainName = e.target.dataset.domaindetails;
+            _this.domains.displayDetails(e, domainName);
         });
+
     };
-    this.addControlFileLinks = function () {
+    this.addControlFileLink = function (node) {
         var _this = this;
-        var nodes = document.querySelectorAll('[data-controlfile]');
-        nodes.forEach(node => {
-            node.classList.add("pointer");
-            node.addEventListener("click", function (e) {
-                var controlFile = e.target.dataset.controlfile;
-                var domainName = e.target.dataset.domain;
-                _this.domains.displayControlFile(e, domainName, controlFile);
-            });
+        node.classList.add("pointer");
+        node.addEventListener("click", function (e) {
+            var controlFile = e.target.dataset.controlfile;
+            var domainName = e.target.dataset.domain;
+            _this.domains.displayControlFile(e, domainName, controlFile);
         });
     };
 };

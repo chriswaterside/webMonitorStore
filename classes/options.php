@@ -9,41 +9,19 @@ class Options {
 
     private $gets = array();
     private $posts = array();
-    private static $thisclass;
-
-    function __construct() {
-        self::$thisclass=$this;
-
+ 
+   public function __construct() {
         foreach ($_GET as $key => $value) {
-            $this->gets[$key] = htmlspecialchars($value);
-          //  echo $value;
-          //  echo $key;
+            $this->gets[$key] = $value;
         }
         foreach ($_POST as $key => $value) {
-            $this->posts[$key] = htmlspecialchars($value);
-          //  echo $value;
-          //  echo $key;
+            $this->posts[$key] = $value;
         }
     }
-    public function getOptions(){
-        return self::$thisclass;
-    }
-
-    public function gets($name) {
-        if (isset($this->gets[$name])){
-             return $this->gets[$name];
-        } else {
-            return null;
-        }
-       
-    }
-
     public function posts($name) {
-        if (isset($this->posts[$name])){
-             return $this->posts[$name];
-        } else {
-            return null;
-        }
+        return $this->posts[$name] ?? null;  
     }
-
+    public function gets($name) {
+        return $this->gets[$name] ?? null;  
+    } 
 }

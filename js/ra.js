@@ -1,4 +1,4 @@
-var ra, jplist, document, performance;
+var ra, document, performance;
 if (typeof (ra) === "undefined") {
     ra = {};
 }
@@ -6,9 +6,6 @@ ra._isES6 = null;
 ra._baseDirectory = '';
 ra._jversion = "1.5.0";
 ra.uniquenumber = 0;
-//document.addEventListener('DOMContentLoaded', function () {
-//    ra.checkLoadingErrors();
-//}, false);
 
 ra.defaultMapOptions = {
     divId: "",
@@ -23,20 +20,23 @@ ra.defaultMapOptions = {
     settings: true,
     mylocation: true,
     fitbounds: true,
+    resizer: true,
     draw: false,
     print: true,
     displayElevation: null,
     licenseKeys: {
         ORSkey: null,
-        bingkey: "",
+        OSTestkey: "",
         OSkey: "",
         mapBoxkey: null,
-        thunderForestkey: null},
+        thunderForestkey: null,
+        W3Wkey: null},
     topoMapDefault: false,
     controlcontainer: false,
     copyright: null,
     initialview: null
 };
+ra.w3wLicenseKey = null;
 // return base directory
 ra.baseDirectory = function () {
     return ra._baseDirectory;
@@ -57,28 +57,18 @@ ra.decodeOptions = function (value) {
         ra._baseDirectory = "/" + base;
     }
     ra.defaultMapOptions.licenseKeys = options.licenseKeys;
+//    if (ra.w3wLicenseKey === null) {
+//        ra.w3wLicenseKey = ra.defaultMapOptions.licenseKeys.W3Wkey;
+//    }
+//
     value = "";
     return options;
 };
 ra.uniqueID = function () {
     ra.uniquenumber += 1;
-    return 'uniqueid' + ra.uniquenumber; // lowercase because of jplist issue
+    return 'uid' + ra.uniquenumber; // lowercase 
 };
 ra.bootstrapper = function (jversion, displayClass, mapOptions, _data) {
-//    window.addEventListener("error", (event) => {
-//        var instr = '<p>Unexpected error, this might be solved by reloading/refreshing the web page</p><ul>' +
-//                '<li>In most browsers you can reload the page by pressing Ctrl+F5. </li>';
-//        var body = event.message + '\n\r' + 'Filename: ' + event.filename + '\n\r';
-//        body = ra.html.specialCharsToHex(body + event.error.stack).replace(/\n/g, '%0D%0A');
-//        var subject = encodeURIComponent("Unexpected error: " + window.location.href);
-//        var email = 'mailto:unexpected@ramblers-webs.org.uk?subject=' + subject + '&body=' + body;
-//        var emailLink = "<li>If problem continues then please <a href='" + email + "' >Report error using email</a></li></ul>";
-//        var cont = "<p><b>When you click the <i>Close button</i> the web page will try and continue but may not function correctly</b></p>";
-//        ra.showError(instr + emailLink + cont, "Fatal error");
-//        event.stopImmediatePropagation();
-//        ra.loading.stop();
-//
-//    });
 
     ra.loading.start();
     ra._jversion = jversion;
@@ -105,6 +95,7 @@ ra.bootstrapper = function (jversion, displayClass, mapOptions, _data) {
         }
     }
     ra.loading.stop();
+    // ra.wrong();
 };
 ra.decodeData = function (value) {
     if (value === null) {
@@ -113,28 +104,6 @@ ra.decodeData = function (value) {
     var data = JSON.parse(value);
     value = "";
     return data;
-};
-ra.checkLoadingErrors = function () {
-    var errors = "";
-    var res = performance.getEntriesByType("resource");
-    for (let item of res) {
-        if (item.responseStatus && item.responseStatus > 400) {
-            errors += "(" + item.responseStatus + ")  " + item.name + "\n\r";
-        }
-    }
-
-    if (errors !== "") {
-        var instr = '<p>Web page failed to load correctly, this might be solved by reloading/refreshing the web page</p><ul>' +
-                '<li>In most browsers you can reload the page by pressing Ctrl+F5. </li>';
-        var body = 'Web page loading error on web page: ' + window.location.href + '\n\rResources\n\r' + errors + "\n\r";
-        body = encodeURIComponent(body);
-        var subject = encodeURIComponent("Web page loading error: " + window.location.href);
-        var email = 'mailto:unexpected@ramblers-webs.org.uk?subject=' + subject + '&body=' + body;
-        var emailLink = "<li>If problem continues then please <a href='" + email + "' >Report error using email</a></li></ul>";
-        var cont = "<p><b>When you click the <i>Close button</i> the web page will try and continue but may not function correctly</b></p>";
-        ra.showError("<div class='loading-error'>" + instr + emailLink + cont + "</div>", "Loading Error");
-    }
-
 };
 
 // alternatives to alert
@@ -319,8 +288,14 @@ ra.isES6 = function () {
         return ra._isES6;
     }
 };
+ra.hasMouse = function () {
+    return matchMedia('(pointer:fine)').matches;
+};
 ra.isRealOject = function (obj) {
     return typeof obj === "object" && obj !== null && obj !== 'undefined';
+};
+ra.isNumber = function (value) {
+    return typeof value === 'number' && !Number.isNaN(value);
 };
 ra.arrayToCSV = function (arr) {
     var item, i;
@@ -426,19 +401,77 @@ ra.ajax = (function () {
         };
         xhr.send(data);
     };
+
     return ajax;
+}
+());
+ra.errors = (function () {
+    var errors = {};
+    errors.toServer = function (action, error) {
+        var url = "https://errors.theramblers.org.uk/store_errors.php";
+        var formData = new FormData();
+        formData.append("domain", window.location.href);
+        formData.append("action", action);
+        formData.append("error", error);
+        formData.append("trace", null);
+
+        xmlhttp = new XMLHttpRequest();
+        xmlhttp.onload = function () {
+            if (xmlhttp.status === 200) {
+                console.log(xmlhttp.responseText);
+            } else {
+                console.error('Error Log status: ' + xmlhttp.status);
+            }
+        };
+        xmlhttp.open("POST", url, true);
+        xmlhttp.send(formData);
+    };
+    return errors;
+}
+());
+ra.logger = (function () {
+    var logger = {};
+    logger.toServer = function (data) {
+        //   var url = "http://localhost/logData/index.php";
+        var url = "https://logger.theramblers.org.uk";
+        var formData = new FormData();
+        data.forEach(function (value, index) {
+            formData.append("item" + index, value);
+            //  console.log('Logging', value);
+        });
+        var xmlhttp = new XMLHttpRequest();
+        xmlhttp.onload = function () {
+            //  if (xmlhttp.status === 200) {
+            //      console.log(xmlhttp.responseText);
+            //  } else {
+            //  console.log('Logging status:', xmlhttp.status);
+            //  }
+        };
+        xmlhttp.open("POST", url, true);
+        xmlhttp.send(formData);
+    };
+    return logger;
 }
 ());
 ra.cookie = (function () {
     var cookie = {};
     cookie.create = function (raobject, name, days) {
         var expires = "";
-        if (days) {
-            var date = new Date();
-            date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
-            expires = "; expires=" + date.toGMTString();
+        switch (true) {
+            case (days < 0):
+                return;
+            case (days === null):
+                return;
+            case (days === 0):
+                expires = '';
+                break;
+            case (days > 0):
+                var date = new Date();
+                date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+                expires = "; expires=" + date.toGMTString();
         }
         document.cookie = name + "=" + raobject + expires + "; path=/;samesite=Strict";
+
     };
     cookie.read = function (name) {
         var nameEQ = name + "=";
@@ -778,11 +811,19 @@ ra.html = (function () {
         tag.appendChild(ele);
         return ele;
     };
-    html.addTableRow = function (tabletag, cols) {
+    html.addTableRow = function (tabletag, cols, tag = "td") {
         var tr = ra.html.createElement(tabletag, "tr");
         cols.forEach(col => {
-            var td = ra.html.createElement(tr, "td");
-            td.innerHTML = col;
+            var td = ra.html.createElement(tr, tag);
+            if (typeof col === 'string') {
+                td.innerHTML = col;
+            }
+            if (typeof col === 'number') {
+                td.innerHTML = col;
+            }
+            if (typeof col === 'object') {
+                td.appendChild(col);
+            }
         });
     };
     html.displayInModal = function (tag) {
@@ -900,11 +941,32 @@ ra.html = (function () {
                 rect.left >= 0 &&
                 rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
                 rect.right <= (window.innerWidth || document.documentElement.clientWidth)
-
                 );
     };
     html.insertAfter = function (referenceNode, newNode) {
         referenceNode.parentNode.insertBefore(newNode, referenceNode.nextSibling);
+    };
+    html.createImageWithPopup = function (image, popupImage, title, subTitle) {
+        var a = document.createElement('a');
+        a.setAttribute('class', 'pointer');
+        a.setAttribute('title', 'Click to expand/view');
+        var img = document.createElement('img');
+        img.setAttribute('src', image);
+        a.appendChild(img);
+        a.addEventListener('click', function (e) {
+            var div = document.createElement('div');
+            var img = document.createElement('img');
+            img.setAttribute('src', popupImage);
+            div.appendChild(img);
+            var h1 = document.createElement('h2');
+            h1.innerHTML = title;
+            div.appendChild(h1);
+            var h2 = document.createElement('h3');
+            h2.innerHTML = subTitle;
+            div.appendChild(h2);
+            ra.modals.createModal(div, false, true);
+        });
+        return {a: a, img: img};
     };
     html.triggerEvent = function (element, eventName) {
         var event = document.createEvent("HTMLEvents");
@@ -943,14 +1005,19 @@ ra.html = (function () {
                 mywindow.document.write(noprint);
             }
         }
-        mywindow.document.write('</head><body><div id="js-document"><input type="button" value="Print" onclick="javascript:window.print(); return false;"><div class="div.component-content">');
-        mywindow.document.write(html);
+        mywindow.document.write('</head><body><div id="js-document"><input type="button" value="Print" onclick="javascript:window.print(); return false;"><div id="js-content">');
         mywindow.document.write('</div></div></body></html>');
         var span = mywindow.document.getElementById("js-document");
 // When the user clicks on <span> (x), close the modal
         span.onclick = function () {
             mywindow.close();
         };
+        var content = mywindow.document.getElementById("js-content");
+        if (typeof html === 'string') {
+            content.innerHTML = html;
+        } else {
+            content.appendChild(html);
+        }
         mywindow.document.close();
         mywindow.focus();
         return true;
@@ -965,17 +1032,20 @@ ra.html = (function () {
         return $text;
     };
     // escape why?
-    html.escape = function (text) {
-        var map = {
-            '&': '&amp;',
-            '<': '&lt;',
-            '>': '&gt;',
-            '"': '&quot;',
-            "'": '&#039;'
-        };
-        return text.replace(/[&<>"']/g, function (m) {
-            return map[m];
-        });
+    html.escape = function (htmlStr) {
+        return htmlStr.replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#39;");
+    };
+    html.unEscape = function (htmlStr) {
+        htmlStr = htmlStr.replace(/&lt;/g, "<");
+        htmlStr = htmlStr.replace(/&gt;/g, ">");
+        htmlStr = htmlStr.replace(/&quot;/g, "\"");
+        htmlStr = htmlStr.replace(/&#39;/g, "\'");
+        htmlStr = htmlStr.replace(/&amp;/g, "&");
+        return htmlStr;
     };
     html.specialCharsToHex = function (str) {
         return str.replace(/[^\w\s]/g, function (char) {
@@ -1074,6 +1144,14 @@ if (typeof (ra.html.input) === "undefined") {
         inputTag.classList.add("button-p0555");
         inputTag.classList.remove("button-p5565");
     };
+    ra.html.input.helpComment = function (tag, text) {
+        if (text === null) {
+            return;
+        }
+        var p = document.createElement('p');
+        p.innerHTML = text;
+        tag.parentNode.appendChild(p);
+    };
     ra.html.input.yesNo = function (tag, divClass, label, raobject, property, options = ['Yes', 'No']) {
         var colours = ["button-p0555", "button-p0186"];
         if (options[0] !== 'Yes' || options[1] !== 'No') {
@@ -1085,10 +1163,11 @@ if (typeof (ra.html.input) === "undefined") {
         }
         tag.appendChild(itemDiv);
         var _label = document.createElement('label');
-        _label.textContent = label;
+        _label.innerHTML = label;
         _label.style.display = "inline";
         var inputTag = document.createElement('button');
         inputTag.setAttribute('class', 'small link-button granite');
+        inputTag.setAttribute('title', 'Click to change value');
         inputTag.style.display = "inline";
         inputTag.style.marginLeft = "10px";
         if (raobject[property]) {
@@ -1142,7 +1221,7 @@ if (typeof (ra.html.input) === "undefined") {
         inputTag.setAttribute('class', '');
         inputTag.style.display = "inline";
         inputTag.style.marginLeft = "10px";
-        inputTag.style.width = "250px";
+        inputTag.style.width = "fit-content;";
         var which = '';
         Object.keys(options).forEach(function (key) {
             var item = options[key];
@@ -1236,14 +1315,15 @@ if (typeof (ra.html.input) === "undefined") {
         tag.appendChild(itemDiv);
         var inputColor = document.createElement('input');
         inputColor.setAttribute('type', 'color');
-        inputColor.setAttribute('class', 'pointer');
+        inputColor.setAttribute('class', 'pointer ra colourselector');
+        inputColor.setAttribute('title', 'Click to change colour');
         inputColor.setAttribute('value', raobject[property]);
         itemDiv.appendChild(inputColor);
         inputColor.ra = {};
         inputColor.ra.object = raobject;
         inputColor.ra.property = property;
-        inputColor.style.height = "30px";
-        inputColor.style.width = "50px";
+        inputColor.style.height = "35px";
+        inputColor.style.width = "60px";
         inputColor.style.backgroundColor = "#DDDDDD";
         inputColor.addEventListener("input", function (e) {
             e.target.ra.object[e.target.ra.property] = e.target.value;
@@ -1270,9 +1350,9 @@ if (typeof (ra.html.input) === "undefined") {
         var titlestyle = document.createElement('h5');
         titlestyle.textContent = labeltext;
         itemDiv.appendChild(titlestyle);
-        var color = ra.html.input.colour(itemDiv, 'inlineBlock', 'Colour', raobject, 'color');
         var example = ra.html.input._addExampleLine(itemDiv, "150px", "Example: ");
-        var weight = ra.html.input.number(itemDiv, '', 'Weight %n pixels', raobject, 'weight', 1, 10, 0.5);
+        var color = ra.html.input.colour(itemDiv, '', 'Line Colour:', raobject, 'color');
+        var weight = ra.html.input.number(itemDiv, '', 'Weight/width %n pixels', raobject, 'weight', 1, 10, 0.5);
         var opacity = ra.html.input.number(itemDiv, '', 'Opacity %n (0-1)', raobject, 'opacity', .1, 1, .01);
         itemDiv.ra = {};
         itemDiv.ra.color = color;
@@ -1318,7 +1398,7 @@ if (typeof (ra.html.input) === "undefined") {
         com.style.display = 'inline-block';
         com.textContent = comment;
         com.style.marginRight = '10px';
-        com.style.marginTop = '20px';
+        com.style.marginTop = '0px';
         com.style.marginLeft = "10px";
         tag.appendChild(com);
         var itemDiv = document.createElement('div');
@@ -1350,7 +1430,7 @@ if (typeof (ra.html.input) === "undefined") {
         itemDiv.appendChild(titlestyle);
         var color = ra.html.input.colour(itemDiv, 'inlineBlock', 'Colour', raobject, 'color');
         var example = ra.html.input._addExampleFill(itemDiv, "Example: ");
-        var opacity = ra.html.input.number(itemDiv, '', 'Opacity %n (0-1)', raobject, 'opacity', .1, 1, .01);
+        var opacity = ra.html.input.number(itemDiv, '', 'Opacity %n (0-1)', raobject, 'opacity', 0, 1, .01);
         itemDiv.ra = {};
         itemDiv.ra.color = color;
         itemDiv.ra.opacity = opacity;
@@ -1406,10 +1486,10 @@ if (typeof (ra.html.input) === "undefined") {
 ra.link = (function () {
     var link = {};
     link.getOSMap = function (lat, long, text) {
-        var $out;
-        $out = "<abbr title='Click Map to see Ordnance Survey map of location'>";
-        $out = "<a class='mappopup' href=\"javascript:ra.link.streetmap(" + lat + "," + long + ")\" >[" + text + "]</a>";
-        $out += "</abbr>";
+        var $out='';
+//        $out = "<abbr title='Click Map to see Ordnance Survey map of location'>";
+//        $out = "<a class='mappopup' href=\"javascript:ra.link.streetmap(" + lat + "," + long + ")\" >[" + text + "]</a>";
+//        $out += "</abbr>";
         return $out;
     };
     link.getAreaMap = function ($location, $text) {
@@ -1431,8 +1511,8 @@ ra.link = (function () {
     };
     link.streetmap = function (lat, long) {
         ////https://streetmap.co.uk/loc/N52.038333,W4.578611
-        var page = "https://www.streetmap.co.uk/loc/N" + lat + ",E" + long;
-        window.open(page, "_blank", "scrollbars=yes,width=900,height=580,menubar=yes,resizable=yes,status=yes");
+  //      var page = "https://www.streetmap.co.uk/loc/N" + lat + ",E" + long;
+  //      window.open(page, "_blank", "scrollbars=yes,width=900,height=580,menubar=yes,resizable=yes,status=yes");
     };
     link.googlemap = function ($lat, $long) {
         var page = "https://www.google.com/maps/place/" + $lat.toString() + "+" + $long.toString() + "/@" + $lat.toString() + "," + $long.toString() + ",15z";
@@ -1481,7 +1561,7 @@ ra.w3w = (function () {
     var w3w = {};
     w3w.get = function (lat, lng, id, place) {
         var tag = ra.html.getTag(id);
-        var w3wurl = "https://api.what3words.com/v3/convert-to-3wa?key=6AZYMY7P&coordinates=";
+        var w3wurl = "https://api.what3words.com/v3/convert-to-3wa?key=" + ra.w3wLicenseKey + "&coordinates=";
         var url = w3wurl + lat.toFixed(7) + ',' + lng.toFixed(7);
         ra.ajax.getJSON(url, function (err, items) {
 
@@ -1513,7 +1593,7 @@ ra.w3w = (function () {
         return out;
     };
     w3w.toLocation = function (tag, words) {
-        var url = "https://api.what3words.com/v3/convert-to-coordinates?words=" + words + "&key=6AZYMY7P";
+        var url = "https://api.what3words.com/v3/convert-to-coordinates?words=" + words + "&key=" + ra.w3wLicenseKey;
         ra.ajax.getJSON(url, function (err, item) {
             let event = new Event("what3wordsfound");
             event.raData = {};
@@ -1528,7 +1608,7 @@ ra.w3w = (function () {
         });
     };
     w3w.fetch = function (tag, dataObject, lat, lng) {
-        var w3wurl = "https://api.what3words.com/v3/convert-to-3wa?key=6AZYMY7P&coordinates=";
+        var w3wurl = "https://api.what3words.com/v3/convert-to-3wa?key=" + ra.w3wLicenseKey + "&coordinates=";
         var url = w3wurl + lat.toFixed(7) + ',' + lng.toFixed(7);
         ra.ajax.getJSON(url, function (err, item) {
             let event = new Event("what3wordsfound");
@@ -1580,12 +1660,20 @@ ra.modals = (function () {
     };
     document.addEventListener("ra-modal-closing", function (event) {
         //modals.diag("Closing");
-        modals._items.pop();
+        var modalToClose = event.raModal;
+        var i = modals._items.indexOf(modalToClose);
+        if (i < 0) {
+            return;
+        }
+        var last = i + 1 === modals._items.length;
+        modals._items.splice(i, 1);
         if (modals._items.length === 0) {
             modals.masterdiv.innerHTML = '';
         } else {
-            var item = modals._items[modals._items.length - 1];
-            ra.html.setTag(modals.masterdiv, item.getContent());
+            if (last) {
+                var item = modals._items[modals._items.length - 1];
+                ra.html.setTag(modals.masterdiv, item.getContent());
+            }
         }
         // modals.diag("Closing after");
     });
@@ -1634,6 +1722,7 @@ ra.modal = function () {
     };
     this.close = function () {
         let e = new Event("ra-modal-closing");
+        e.raModal = this;
         document.dispatchEvent(e);
         event.stopImmediatePropagation();
         if (this._fullScreenElement !== null) {
@@ -1869,7 +1958,7 @@ ra.help = function (tag, helpFunction) {
         var _this = this;
         this.helpTag.addEventListener("click", function (e) {
             _this.helpTag.style.display = 'none';
-            var ele = e.target;
+            var ele = e.currentTarget;
             if (ele.raHelpTag === 'undefined') {
                 ra.showError('help undefined');
             }
@@ -1914,10 +2003,14 @@ ra.help = function (tag, helpFunction) {
         });
     };
 };
+
 ra.filter = function (eventTag, eventName) {
     this.eventTag = eventTag;
     this.eventName = eventName;
     this.initialised = false;
+    this.filterDiv = null;
+    this.filterButtonDiv = null;
+    this.displayClearFilters = null;
     this._groups = {};
     this.addGroup = function (group) {
         group.setFilter(this);
@@ -1935,6 +2028,13 @@ ra.filter = function (eventTag, eventName) {
         this.eventTag.dispatchEvent(new Event(this.eventName));
         var nodes = document.getElementsByClassName("ra-clear-filters");
         nodes[0].style.display = "";
+        if (this.isAnyFilterActive()) {
+            this.filterButtonDiv.classList.add('active');
+            this.displayClearFilters.style.visibility = "";
+        } else {
+            this.filterButtonDiv.classList.remove('active');
+            this.displayClearFilters.style.visibility = "hidden";
+        }
     };
     this.getJson = function () {
         function replacer(key, value) {
@@ -1962,12 +2062,17 @@ ra.filter = function (eventTag, eventName) {
             return;
         }
         var tags = [
-            {name: 'details', parent: 'root', tag: 'details', attrs: {class: "ra-walksfilter"}},
+            {name: 'details', parent: 'root', tag: 'details', attrs: {class: "ra-detailsButton"}},
             {name: 'summary', parent: 'details', tag: 'summary', textContent: 'Filter'},
+            {name: 'clearFilter', parent: 'details', tag: 'div', textContent: 'Clear filters', attrs: {class: "ra-clear-filters ra-filteritem right"}},
             {name: 'filters', parent: 'details', tag: 'div', attrs: {class: 'ra-walksfilter'}}
         ];
         var elements = ra.html.generateTags(tag, tags);
         var filters = elements.filters;
+        this.filterDiv = filters;
+        this.filterButtonDiv = elements.summary;
+        this.displayClearFilters = elements.clearFilter;
+        this.displayClearFilters.style.visibility = "hidden";
         for (var propt in this._groups) {
             var div = document.createElement('div');
             div.setAttribute('class', 'ra-filtergroup');
@@ -1975,26 +2080,10 @@ ra.filter = function (eventTag, eventName) {
             var group = this._groups[propt];
             group._display(div);
         }
-
-        // clear filters
-        var displayClearFilters = document.createElement('div');
-        displayClearFilters.textContent = "Clear filters";
-        displayClearFilters.classList.add('ra-clear-filters');
-        displayClearFilters.classList.add('ra-filteritem');
-        displayClearFilters.classList.add('right');
-        displayClearFilters.style.display = "none";
-        filters.appendChild(displayClearFilters);
         var _this = this;
-        displayClearFilters.onclick = function (event) {
-            var nodes = filters.getElementsByClassName("ra-filteritem");
-            if (nodes.length > 0) {
-                for (let i = 0; i < nodes.length; i++) {
-                    nodes[i].classList.remove('active');
-                }
-            }
+        this.displayClearFilters.onclick = function (event) {
             _this.clearFilters();
             _this.signalEvent();
-            displayClearFilters.style.display = "none";
         };
         // display empty categories 
         var nodes = filters.getElementsByClassName("nilFilter");
@@ -2040,6 +2129,17 @@ ra.filter = function (eventTag, eventName) {
             }
         }
         return display;
+    };
+    this.isAnyFilterActive = function () {
+        var nodes = this.filterDiv.getElementsByClassName("ra-filteritem");
+        if (nodes.length > 0) {
+            for (let i = 0; i < nodes.length; i++) {
+                if (nodes[i].classList.contains('active')) {
+                    return true;
+                }
+            }
+        }
+        return false;
     };
     this.clearFilters = function () {
         for (var propt in this._groups) {
@@ -2092,24 +2192,31 @@ ra.filter.groupDate = function (id, title) {
             tag.appendChild(div);
             var label = document.createElement('label');
             label.style.marginLeft = '5px';
+            var inputId = this.id;
             if (title === "Start") {
                 label.style.marginRight = '5px';
+                inputId += "Start";
             } else {
                 label.style.marginRight = '10px';
+                inputId += "End";
             }
+            label.setAttribute('for', inputId);
             label.textContent = title;
             div.appendChild(label);
             var input = document.createElement('input');
             this.inputs.push(input);
+            input.classList.add('ra-filteritem');
             input.setAttribute('type', 'date');
             input.setAttribute('value', ra.date.YYYYMMDD(initValue));
             input.setAttribute('min', ra.date.YYYYMMDD(this.min));
             input.setAttribute('max', ra.date.YYYYMMDD(this.max));
+            input.setAttribute('id', inputId);
             div.appendChild(input);
             var _this = this;
             input.addEventListener("input", function (event) {
                 var input = event.target;
                 var value = input.value;
+                var tag = event.target;
                 if (title === "Start") {
                     if (value === "") {
                         value = input.min;
@@ -2125,11 +2232,10 @@ ra.filter.groupDate = function (id, title) {
                     _this.values.max = ra.date.getDateTime(value);
                 }
                 if (input.value !== ra.date.YYYYMMDD(input.min) && input.value !== ra.date.YYYYMMDD(input.max)) {
-                    event.target.style.backgroundColor = "rgb(240, 128, 80,1)";
+                    tag.classList.add('active');
                 } else {
-                    event.target.style.backgroundColor = "#FFFFFF";
+                    tag.classList.remove('active');
                 }
-
                 _this._filter.signalEvent();
             });
             initValue = this.max;
@@ -2148,9 +2254,9 @@ ra.filter.groupDate = function (id, title) {
         return false;
     };
     this._clearFilters = function () {
-        this.inputs[0].value = this.min;
+        this.inputs[0].value = ra.date.YYYYMMDD(this.min);
         this.inputs[0].dispatchEvent(new Event('input'));
-        this.inputs[1].value = this.max;
+        this.inputs[1].value = ra.date.YYYYMMDD(this.max);
         this.inputs[1].dispatchEvent(new Event('input'));
     };
     this._insert = function (value) {
@@ -2201,7 +2307,9 @@ ra.filter.groupLimit = function (id, title, options = null) {
         h.textContent = this.title;
         tag.appendChild(h);
         var select = document.createElement('select');
+        select.setAttribute('name', this.id);
         this.select = select;
+        select.classList.add('ra-filteritem');
         select.style.marginLeft = '5px';
         tag.appendChild(select);
         var values = this.values;
@@ -2216,10 +2324,13 @@ ra.filter.groupLimit = function (id, title, options = null) {
         select.addEventListener("change", function (event) {
             // only works if you have one select as 'updated' is hard coded
             _this.limit = Number(event.target.value);
+            var tag = event.target;
             if (_this.limit !== 0) {
-                event.target.style.backgroundColor = "rgb(240 ,128 ,80,1)";
+                //  event.target.style.backgroundColor = "rgb(240 ,128 ,80,1)";
+                tag.classList.add('active');
             } else {
-                event.target.style.backgroundColor = "#FFFFFF";
+                //   event.target.style.backgroundColor = "#FFFFFF";
+                tag.classList.remove('active');
             }
             _this._filter.signalEvent();
         });
@@ -2285,7 +2396,8 @@ ra.filter.groupText = function (id, title, options = null) {
             return;
         }
         if (len === 1 && !this.displaySingle) {
-            return;
+            tag.classList.add("nilFilter");
+            tag.style.display = 'none';
         }
         var h = document.createElement('h3');
         h.textContent = this.title;
@@ -2310,18 +2422,15 @@ ra.filter.groupText = function (id, title, options = null) {
                 var _this = this;
                 div.ra = {option: item};
                 div.addEventListener("click", function (event) {
-                    var option = this.ra.option;
-                    option.active = !option.active;
-                    if (option.active) {
-                        this.classList.add('active');
+                    var tag = event.target;
+                    if (tag.classList.contains('active')) {
+                        tag.classList.remove('active');
                     } else {
-                        this.classList.remove('active');
+                        tag.classList.add('active');
                     }
                     _this._filter.signalEvent();
                 });
             }
-
-
         }
     };
     this._shouldDisplay = function (valueArray) {
@@ -2329,7 +2438,7 @@ ra.filter.groupText = function (id, title, options = null) {
         var items = this.values;
         for (var propt in items) {
             var item = items[propt];
-            if (item.active) {
+            if (item.div.classList.contains('active')) {
                 anyActive = true;
             }
         }
@@ -2341,7 +2450,7 @@ ra.filter.groupText = function (id, title, options = null) {
         }
         for (var propt in items) {
             var item = items[propt];
-            if (item.active) {
+            if (item.div.classList.contains('active')) {
                 if (valueArray.includes(propt)) {
                     return true;
                 }
@@ -2353,21 +2462,16 @@ ra.filter.groupText = function (id, title, options = null) {
         var items = this.values;
         for (var propt in items) {
             var item = items[propt];
-            item.active = false;
+            item.div.classList.remove('active');
         }
     };
     this._insert = function (value) {
-
         var values = this.values;
         if (!values.hasOwnProperty(value)) {
             values[value] = {};
             values[value].no = 0;
-            // values[value].name = "";
-            //   values[value].tagId = null; // tagId;
         }
         values[value].no += 1;
-        //  values[value].name = value;
-        values[value].active = false;
     };
     this.activateFilterItem = function (name) {
         var item = this.values[name];
@@ -2379,128 +2483,8 @@ ra.filter.groupText = function (id, title, options = null) {
         }
     };
 };
-ra.jplist = function (group) {
-    this.hasFilters = false;
-    this.group = group;
-    this.addPagination = function (no, tag, jplistName, itemsPerPage) {
-        tag.innerHTML = '';
-        if (!ra.isES6()) {
-            var h3 = document.createElement('h3');
-            h3.setAttribute('class', 'oldBrowser');
-            h3.textContent = 'You are using an old Web Browser!';
-            var p = document.createElement('p');
-            p.setAttribute('class', 'oldBrowser');
-            h3.textContent = 'We suggest you upgrade to a more modern Web browser, Chrome, Firefox, Safari,...';
-            h3.appendChild(p);
-            tag.appendChild(h3);
-            return null;
-        }
-        if (no < 21) {
 
-        } else {
-            var tags = [
-                {name: 'div', parent: 'root', tag: 'div', attrs: {'data-jplist-control': 'pagination',
-                        'data-group': this.group, 'data-items-per-page': itemsPerPage,
-                        'data-current-page': '0', 'data-id': 'no-items',
-                        'data-name': jplistName, class: 'ra pagination'}},
-                {name: 'spanitems', parent: 'div', tag: 'span'},
-                {name: 'span', parent: 'spanitems', tag: 'span', attrs: {class: 'ra nonmobile', 'data-type': 'info'}, textContent: '{startItem} - {endItem} of {itemsNumber}'},
-                {name: 'buttons', parent: 'div', tag: 'span', attrs: {class: 'center '}},
-                {name: 'first', parent: 'buttons', tag: 'button', attrs: {type: 'button', 'data-type': 'first'}, textContent: '|<'},
-                {name: 'previous', parent: 'buttons', tag: 'button', attrs: {type: 'button', 'data-type': 'prev'}, textContent: '<'},
-                {name: 'xxx', parent: 'buttons', tag: 'span', attrs: {class: 'jplist-holder', 'data-type': 'pages'}},
-                {name: 'pageNumber', parent: 'xxx', tag: 'button', attrs: {type: 'button', 'data-type': 'page'}, textContent: '{pageNumber}'},
-                {name: 'next', parent: 'buttons', tag: 'button', attrs: {type: 'button', 'data-type': 'next'}, textContent: '>'},
-                {name: 'last', parent: 'buttons', tag: 'button', attrs: {type: 'button', 'data-type': 'last'}, textContent: '>|'},
-                {name: 'select', parent: 'div', tag: 'select', attrs: {class: 'ra nonmobile', 'data-type': 'items-per-page'}},
-                {parent: 'select', tag: 'option', attrs: {value: '10'}, textContent: '10 per page'},
-                {parent: 'select', tag: 'option', attrs: {value: '20'}, textContent: '20 per page'},
-                {parent: 'select', tag: 'option', attrs: {value: '25'}, textContent: '25 per page'},
-                {parent: 'select', tag: 'option', attrs: {value: '50'}, textContent: '50 per page'},
-                {parent: 'select', tag: 'option', attrs: {value: '100'}, textContent: '100 per page'},
-                {parent: 'select', tag: 'option', attrs: {value: '0'}, textContent: 'View all'}
-            ];
-            var elements = ra.html.generateTags(tag, tags);
-            elements.select.style.width = "120px";
-        }
 
-        return null;
-    };
-    this.addFilter = function (varclass, name, type, min = 0, max = 999999) {
-        var out = "";
-        if (type === "text") {
-            this.hasFilters = true;
-            out = '<input \
-     data-jplist-control="textbox-filter"  data-group="' + this.group + '" \
-     data-name="my-filter-' + varclass + '" \\n\
-     id="my-filter-' + varclass + '" \
-     data-path=".' + varclass + '" type="text" \
-     value="" placeholder="Filter by ' + name + '" />';
-        }
-        if (type === "number") {
-            this.hasFilters = true;
-            out = '<div class="csv-slider"><div class="ra-slider" \
-                  data-jplist-control="slider-range-filter" \
-                  data-path=".' + varclass + '" \
-                  data-group="' + this.group + '" \
-                  data-name="my-slider-' + varclass + '" \
-                  data-min="' + min + '" \
-                  data-from="' + min + '" \
-                  data-to="' + max + '" \
-                  data-max="' + max + '"> \
-                  <b>' + name + ':</b> <span data-type="value-1"></span> \
-                  <div class="jplist-slider" data-type="slider"></div> \
-                  <span data-type="value-2"></span>  \
-                  </div></div>';
-        }
-        var _this = this;
-        window.addEventListener("resize", function () {
-            _this.updateControls();
-        });
-        return out;
-    };
-    this.sortButton = function (tag, varclass, type, order, text) {
-        var button = document.createElement('button');
-        tag.appendChild(button);
-        button.setAttribute('class', "jplistsortbutton" + order);
-        button.setAttribute('data-jplist-control', "sort-buttons");
-        button.setAttribute('data-path', "." + varclass);
-        button.setAttribute('data-group', this.group);
-        button.setAttribute('data-order', order);
-        button.setAttribute('data-type', type);
-        button.setAttribute('data-name', "sortbutton");
-        button.setAttribute('data-selected', "false");
-        button.setAttribute('data-mode', "radio");
-        button.textContent = text;
-        return button;
-    };
-    this.updateControls = function () {
-        var sliders = document.getElementsByClassName('ra-slider');
-        for (let slider of sliders) {
-            jplist.resetControl(slider);
-        }
-    };
-    this.init = function (name) {
-        var hasPagination = false;
-        var elements = document.querySelectorAll("[data-jplist-control='pagination']");
-        for (let i = 0; i < elements.length; i++) {
-            let element = elements[i];
-            if (element.hasAttribute('data-group')) {
-                if (element.getAttribute('data-group') === this.group) {
-                    hasPagination = true;
-                }
-            }
-        }
-        if (ra.isES6()) {
-            if (this.hasFilters || hasPagination) {
-                jplist.init({
-                    storage: 'sessionStorage', //'localStorage', 'sessionStorage' or 'cookies'
-                    storageName: name //the same storage name can be used to share storage between multiple pages
-                });
-            }
-        }
-    };
-};
 if (typeof (ra.ics) === "undefined") {
     ra.ics = {};
     // https://icalendar.org/
@@ -2533,9 +2517,12 @@ if (typeof (ra.ics) === "undefined") {
             this._addRecord('CLASS:', 'PUBLIC');
             this._addRecord('END:', 'VEVENT');
         };
-        this.download = function () {
+        this.getFile = function () {
             this._addRecord('END:', 'VCALENDAR');
-            var data = this.file;
+            return this.file;
+        };
+        this.download = function () {
+            var data = this.getFile();
             try {
                 var blob = new Blob([data], {type: "text/calendar"});
                 var name = "ramblerswalks.ics";
@@ -2801,5 +2788,52 @@ ra.uploadFile = function () {
         input.setAttribute('accept', this.extensions);
         div.appendChild(input);
         return input;
+    };
+};
+ra.previousNext = function (tag, items, fnc) {
+    this.items = items;
+    this.tag = tag;
+    this.fnc = fnc;
+    this.display = function (item) {
+        var all = document.createElement("div");
+        this.tag.appendChild(all);
+        var i = this.items.indexOf(item);
+        if (i > 0) {
+            this.displayPrevious(all, i);
+        }
+        var content = document.createElement("div");
+        content.style.clear = "both";
+        all.appendChild(content);
+
+        this.fnc(content, item);
+        if (i < this.items.length - 1) {
+            this.displayNext(all, i);
+        }
+    };
+    this.displayNext = function (nav, i) {
+        var self = this;
+        var div = document.createElement("span");
+        div.innerHTML = "next »";
+        div.classList.add("link-button", "tiny", "mintcake");
+        div.style.float = "right";
+        div.setAttribute("title", "View next item");
+        div.addEventListener('click', function () {
+            self.tag.innerHTML = "";
+            self.display(self.items[i + 1]);
+        });
+        nav.appendChild(div);
+    };
+    this.displayPrevious = function (nav, i) {
+        var self = this;
+        var div = document.createElement("span");
+        div.innerHTML = "« previous";
+        div.classList.add("link-button", "tiny", "mintcake");
+        div.style.float = "left";
+        div.setAttribute("title", "View previous item");
+        div.addEventListener('click', function () {
+            self.tag.innerHTML = "";
+            self.display(self.items[i - 1]);
+        });
+        nav.appendChild(div);
     };
 };

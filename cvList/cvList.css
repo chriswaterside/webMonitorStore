@@ -34,10 +34,10 @@ select.cvList.itemsPerPage {
 
 div.cvList.filter {
     width: 350px;
-    background-color: #EEE;
+    background-color: #dfdfdf;
     border-radius: .25rem;
     padding: 7px;
-    margin-bottom: 5px;
+    margin: 5px;
     font-size: 16px;
 }
 
@@ -52,25 +52,23 @@ div.cvList.text.filter label{
     margin-right:5px;
     font-size: 14px;
 }
-div.cvList.text.filter input{
+XXXdiv.cvList.text.filter{
     margin-left:0px;
     margin-right:0px;
 }
-div.cvList.number.range.filter span.minText{
+div.cvList.text.filter  input.textFilter{
+    width:330px;
+}
+div.cvList.number.range.filter div.minText,
+div.cvList.number.range.filter div.maxText{
     font-weight: bold;
-    width:45px;
-    text-align: right;
-    XXmargin-left: 15px;
+    width:68px;
+    text-align: center;
     display:inline-block;
 }
 div.cvList.number.range.filter div.min-max-slider{
     display:inline-block;
-    margin-left: 15px;
-    width: 150px;
-}
-div.cvList.number.range.filter span.maxText{
-    font-weight: bold;
-    margin-left: 15px;
+    width: 200px;
 }
 
 /* sort arrows */
@@ -94,21 +92,29 @@ div.cvList.sortArrows img.desc{
 
 
 
-/* min max slider control */
+/* range slider control */
 div.min-max-slider input{
     margin : 0px;
 }
-input[type=range].minmaxslider {
+input[type=range].rangeslider {
     width: 100%;
     margin: 3px 0;
     background-color: transparent;
     -webkit-appearance: none;
 }
+div.cvList.across{
+    display: flex;
+}
+div.cvList.across div {
+    flex: 1;
+    display: flex;
+    align-items: center;
+}
 /*
-input[type=range].minmaxslider:focus {
+input[type=range].rangeslider:focus {
   outline: none;
 }*/
-input[type=range].minmaxslider::-webkit-slider-runnable-track {
+input[type=range].rangeslider::-webkit-slider-runnable-track {
     background: rgba(204, 204, 204, 0.78);
     border: 0.2px solid #cccccc;
     border-radius: 1.3px;
@@ -116,9 +122,9 @@ input[type=range].minmaxslider::-webkit-slider-runnable-track {
     height: 12px;
     cursor: pointer;
 }
-input[type=range].minmaxslider::-webkit-slider-thumb {
+input[type=range].rangeslider::-webkit-slider-thumb {
     margin-top: -3.2px;
-    width: 16px;
+    width: 5px;
     height: 18px;
     background: #9bc8ab;
     border: 1px solid #00001e;
@@ -128,11 +134,11 @@ input[type=range].minmaxslider::-webkit-slider-thumb {
 }
 
 /*
-input[type=range].minmaxslider:focus::-webkit-slider-runnable-track {
+input[type=range].rangeslider:focus::-webkit-slider-runnable-track {
   background: #e6e6e6;
 }
 */
-input[type=range].minmaxslider::-moz-range-track {
+input[type=range].rangeslider::-moz-range-track {
     background: rgba(204, 204, 204, 0.78);
     border: 0.2px solid #cccccc;
     border-radius: 1.3px;
@@ -140,15 +146,15 @@ input[type=range].minmaxslider::-moz-range-track {
     height: 12px;
     cursor: pointer;
 }
-input[type=range].minmaxslider::-moz-range-thumb {
-    width: 16px;
+input[type=range].rangeslider::-moz-range-thumb {
+    width: 5px;
     height: 18px;
     background: #9bc8ab;
     border: 1px solid #00001e;
     border-radius: 3px;
     cursor: pointer;
 }
-input[type=range].minmaxslider::-ms-track {
+input[type=range].rangeslider::-ms-track {
     background: transparent;
     border-color: transparent;
     border-width: 3.9px 0;
@@ -157,18 +163,18 @@ input[type=range].minmaxslider::-ms-track {
     height: 12px;
     cursor: pointer;
 }
-input[type=range].minmaxslider::-ms-fill-lower {
+input[type=range].rangeslider::-ms-fill-lower {
     background: #b3b3b3;
     border: 0.2px solid #cccccc;
     border-radius: 2.6px;
 }
-input[type=range].minmaxslider::-ms-fill-upper {
+input[type=range].rangeslider::-ms-fill-upper {
     background: rgba(204, 204, 204, 0.78);
     border: 0.2px solid #cccccc;
     border-radius: 2.6px;
 }
-input[type=range].minmaxslider::-ms-thumb {
-    width: 16px;
+input[type=range].rangeslider::-ms-thumb {
+    width: 5px;
     height: 18px;
     background: #9bc8ab;
     border: 1px solid #00001e;
@@ -178,10 +184,10 @@ input[type=range].minmaxslider::-ms-thumb {
     /*Needed to keep the Edge thumb centred*/
 }
 
-/*input[type=range].minmaxslider:focus::-ms-fill-lower {
+/*input[type=range].rangeslider:focus::-ms-fill-lower {
   background: rgba(204, 204, 204, 0.78);
 }
-input[type=range].minmaxslider:focus::-ms-fill-upper {
+input[type=range].rangeslider:focus::-ms-fill-upper {
   background: rgba(204, 204, 204, 0.78);
 }
 */
@@ -189,7 +195,7 @@ input[type=range].minmaxslider:focus::-ms-fill-upper {
 how to remove the virtical space around the range input in IE*/
 @supports (-ms-ime-align:auto) {
     /* Pre-Chromium Edge only styles, selector taken from hhttps://stackoverflow.com/a/32202953/7077589 */
-    input[type=range].minmaxslider {
+    input[type=range].rangeslider {
         margin: 0;
         /*Edge starts the margin from the thumb, not the track as other browsers do*/
     }

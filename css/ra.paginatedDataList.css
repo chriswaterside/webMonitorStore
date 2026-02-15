@@ -36,191 +36,53 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 }
 
 
-table.paginatedTable{
+div.paginatedList table{
     border:2px solid;
     border-color: #b0b0b0;
     border-radius: 5px;
     width:100%;
 }
-table.paginatedTable tr th{
+div.paginatedList table tr th{
     background-color: #b0b0b0;
 }
-table.paginatedTable tr th,
-table.paginatedTable tr td{
+div.paginatedList table tr th,
+div.paginatedList table tr td{
     padding:3px 6px 3px 6px;
 }
-table.paginatedTable tr th{
-    background-color: #822121;
-    color:#FFFFFF;
+div.paginatedList table tr th{
+    background-color: #ccc;
+    color: #111;
 }
-table.paginatedTable tr{
+div.paginatedList table tr{
     background-color: #EEEEEE;
 }
-table.paginatedTable tr.odd{
+div.paginatedList table tr.odd{
     background-color: #FFFFFF;
 }
 
-table.paginatedTable tr th.right,
-table.paginatedTable tr td.right{
+div.paginatedList table tr th.right,
+div.paginatedList table tr td.right{
     text-align:right;
 }
-table.paginatedTable tr th.left,
-table.paginatedTable tr td.left{
+div.paginatedList table tr th.left,
+div.paginatedList table tr td.left{
     text-align:left;
 }
-table.paginatedTable tr th.center,
-table.paginatedTable tr td.center{
+div.paginatedList table tr th.center,
+div.paginatedList table tr td.center{
     text-align:center;
 }
 
-.XXXpagination {
-    display: flex;
-    padding-left: 0;
-    list-style: none;
-}
-
-[data-jplist-control] {
+div.paginatedList div.pagination{
     display: flex;
     justify-content: space-between;
 }
 
-div.pagination.top {
+div.paginatedList div.pagination.top {
     padding-bottom: 20px;
     clear:both;
 }
-div.pagination.bottom{
+div.paginatedList div.pagination.bottom{
     padding-top: 20px;
     clear:both;
-}
-div.pagination {
-    margin:  0;
-    padding: 0;
-}
-div.ra.pagination span button {
-    background: var(--mintcake);
-    border-width: 0px;
-    border-radius:5px;
-    margin-right: 3px;
-    cursor:pointer;
-}
-div.ra.pagination span span button.jplist-selected {
-    background: var(--sunrise);
-    cursor:default;
-}
-div.ra.pagination span button.jplist-disabled {
-    background: var(--lightgrey);
-    cursor:default;
-}
-div[data-jplist-control] button{
-    min-height: 25px;
-    min-width: 25px;
-}
-
-button.jplistsortbuttonasc,
-button.jplistsortbuttondesc {
-    font-size:12px;
-    line-height:10px;
-    border: none;
-    background-color: inherit;
-    color:white;
-    padding: 0px 0px;
-    margin-left: 5px;
-    cursor: pointer;
-    display: inline;
-    float:right;
-}
-button.jplistsortbuttondesc {
-    clear:both;
-}
-[data-jplist-control] {
-    display: flex;
-    justify-content: space-between;
-}
-
-[data-jplist-control="slider-range-filter"]{
-    display:flex;
-    font-size: 12px;
-    -webkit-box-align: center;
-    -ms-flex-align: center;
-    align-items: center;
-    width: 100%;
-}
-.jplist-slider {
-    width:  200px;
-    height: 20px;
-    background-color: #CCCCCC;
-    margin-right: 15px;
-    margin-left: 15px;
-    border-radius: .25rem;
-    position: relative;
-    -webkit-box-sizing: border-box;
-    box-sizing: border-box;
-}
-
-.jplist-slider::before {
-    content: '';
-    display: block;
-    width: 100%;
-    height: 3px;
-    background: #fff;
-    position: absolute;
-    z-index: 100;
-    left: 0;
-    top: 50%;
-    -webkit-transform: translate(0, -50%);
-    -ms-transform: translate(0, -50%);
-    transform: translate(0, -50%);
-    opacity: 0;
-}
-
-.jplist-slider-holder-1,
-.jplist-slider-holder-2 {
-    width: 20px;
-    height: 100%;
-    border-radius: .25rem;
-    display: block;
-    cursor: pointer;
-    position: absolute;
-    top: 0;
-    left: 0;
-    -webkit-transform: translate(-50%, 0);
-    -ms-transform: translate(-50%, 0);
-    transform: translate(-50%, 0);
-    z-index: 200;
-    -webkit-transition: 0.3s background-color;
-    -o-transition: 0.3s background-color;
-    transition: 0.3s background-color;
-    padding: 0;
-    margin: 0;
-    font-size: 0;
-    line-height: 0;
-}
-div.ra.pagination span span button.jplist-selected {
-    background: var(--sunrise);
-}
-
-.jplist-slider-holder-1 {
-    background: var(--mintcake);
-}
-
-.jplist-slider-holder-2 {
-    background: var(--mintcake);
-}
-
-.jplist-slider-holder-1:active,
-.jplist-slider-holder-2:active{
-    background: var(--sunrise);
-    box-shadow: 0px 0px 10px #fff;
-}
-
-.jplist-slider-range {
-    width: 0;
-    height: 20px;
-    background: #ccc;
-    display: block;
-    position: absolute;
-    left: 0;
-    top: 0;
-    background-image: linear-gradient(45deg,rgba(255,255,255,.15) 25%,transparent 25%,transparent 50%,rgba(255,255,255,.15) 50%,rgba(255,255,255,.15) 75%,transparent 75%,transparent);
-    background-size: 1rem 1rem;
 }

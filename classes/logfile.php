@@ -7,59 +7,74 @@
  */
 class Logfile {
 
-    private static $logfile;
+    private static $logfile = null;
     private static $noerrors = 0;
-    private static $errors;
-    private static $name;
+    private static $errors = [];
+    private static $name = '';
 
     static function create($name) {
         self::$name = $name;
+
+        // Ensure directory exists
+        $dir = dirname($name);
+        if (!is_dir($dir)) {
+            mkdir($dir, 0755, true);
+        }
+
         $subname = date("YmdHis");
-        self::$logfile = fopen($name . $subname . ".log", "w") or die("Unable to open logfile file!");
-        Logfile::writeWhen("Logfile " . $subname . ".log created");
+        $filename = $name . $subname . ".log";
+        $logfile = fopen($filename, "w");
+
+        if (!$logfile) {
+            error_log("Logfile::create FAILED: $filename");
+            return false;
+        }
+
+        self::$logfile = $logfile;
+        self::writeWhen("Logfile {$subname}.log created");
         self::deleteOldFiles();
         self::$errors = [];
+        return true;
     }
 
     static function deleteOldFiles() {
+        if (empty(self::$name)) {
+            return;
+        }
         $today = date("Y-m-d");
         $date = new DateTime($today);
         $date->sub(new DateInterval('P3D'));
-        $datestring = $date->format('Y-m-d');
+        $cutoff = $date->format('Ymd');  // Match filename format
+
         foreach (glob(self::$name . "*.log") as $filename) {
-            //echo "$filename size " . filesize($filename) . "\n";
-            $modified = date("Y-m-d", filemtime($filename));
-            if ($modified < $datestring) {
+            $filedate = date("Ymd", filemtime($filename));
+            if ($filedate < $cutoff) {
                 unlink($filename);
-                logfile::writeWhen("Old logfile deleted: " . $filename);
+                self::writeWhen("Old logfile deleted: " . basename($filename));
             }
         }
     }
 
     static function write($text) {
-        if (isset(self::$logfile)) {
+        if (self::$logfile) {
             fwrite(self::$logfile, $text . "\n");
         }
     }
 
     static function writeWhen($text) {
-        $today = new DateTime();
-        $when = $today->format('Y-m-d H:i:s');
+        $when = (new DateTime())->format('Y-m-d H:i:s');
         self::write($when . " " . $text);
     }
 
     static function writeError($text) {
-        self::$noerrors += 1;
+        self::$noerrors++;
         self::writeWhen(" ERROR: " . $text);
-        self::addError($text);
-    }
-
-    private static function addError($text) {
         if (self::$noerrors <= 10) {
             self::$errors[] = $text;
         }
     }
 
+    // getters
     static function getNoErrors() {
         return self::$noerrors;
     }
@@ -68,14 +83,14 @@ class Logfile {
         return self::$errors;
     }
 
-    static function resetNoErrrors() {
+    static function resetNoErrors() {
         self::$noerrors = 0;
     }
 
     static function close() {
-        if (isset(self::$logfile)) {
+        if (self::$logfile) {
             fclose(self::$logfile);
-            self::$logfile = NULL;
+            self::$logfile = null;
         }
     }
 }

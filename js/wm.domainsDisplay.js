@@ -22,7 +22,7 @@ if (typeof (wm) === "undefined") {
 wm.domainsDisplay = function (domains, extras) {
     this.domains = domains;
     this.extras = extras;
-    this.options = {div: null,
+    this.options = {
         tabs: {"status": {title: "Status"},
             "control files": {title: "Control Files"},
             "latest": {title: "Latest Change"},
@@ -51,14 +51,14 @@ wm.domainsDisplay = function (domains, extras) {
     };
 
     this.load = function (div) {
-        this.options.div = div;
+        this.div = div;
         var _this = this;
         div.addEventListener("displayTabContents", function (e) {
             var option = e.tabDisplay.tab;
             var div = e.tabDisplay.displayInElement;
             _this._display(div, option);
         });
-        var tabs = new ra.tabs(this.options);
+        var tabs = new ra.tabs( this.div,this.options);
         tabs.display();
     };
     this.getDomains = function () {
